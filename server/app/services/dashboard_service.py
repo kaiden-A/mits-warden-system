@@ -86,28 +86,23 @@ async def get_warden_dashboard(
         if day_date > today:
             continue
 
-        for hostel in ("Asrama Putera", "Asrama Puteri"):
-            report_result = await db.execute(
-                select(Report).where(
-                    Report.date == day_date, Report.hostel == hostel
-                )
-            )
-            day_report = report_result.scalar_one_or_none()
+        if not current_user.hostel:
+            continue
 
-            if day_report:
-                week_progress.append(
-                    {
-                        "date": day_date,
-                        "status": day_report.status,
-                    }
-                )
-            else:
-                week_progress.append(
-                    {
-                        "date": day_date,
-                        "status": "none",
-                    }
-                )
+        report_result = await db.execute(
+            select(Report).where(
+                Report.date == day_date,
+                Report.hostel == current_user.hostel,
+            )
+        )
+        day_report = report_result.scalar_one_or_none()
+
+        week_progress.append(
+            {
+                "date": day_date,
+                "status": day_report.status if day_report else "none",
+            }
+        )
 
     week_progress = list(
         {v["date"]: v for v in week_progress}.values()

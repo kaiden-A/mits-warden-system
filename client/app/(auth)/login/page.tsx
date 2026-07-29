@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 
 export default function LoginPage() {
-  const [role, setRole] = useState<'warden' | 'admin'>('warden');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('demo1234');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -41,19 +40,6 @@ export default function LoginPage() {
           <p className="text-xs text-dim-text font-mono uppercase tracking-wider mt-0.5">Laporan Harian &amp; Semakan</p>
         </div>
 
-        <div className="flex border border-paper-line rounded-md overflow-hidden mb-5" role="tablist">
-          <button type="button"
-            className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wider border-r border-paper-line transition-colors ${role === 'warden' ? 'bg-ink text-paper' : 'bg-transparent text-dim-text'}`}
-            onClick={() => { setRole('warden'); setError(''); }}>
-            Warden
-          </button>
-          <button type="button"
-            className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${role === 'admin' ? 'bg-ink text-paper' : 'bg-transparent text-dim-text'}`}
-            onClick={() => { setRole('admin'); setError(''); }}>
-            Pengurusan
-          </button>
-        </div>
-
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-[0.72rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Emel</label>
@@ -78,10 +64,6 @@ export default function LoginPage() {
             {loading ? 'Memproses…' : 'Daftar Masuk'}
           </button>
         </form>
-
-        <p className="text-center text-[0.72rem] text-dim-text font-mono mt-4">
-          Prototaip reka bentuk — sebarang kata laluan sah
-        </p>
       </div>
     </div>
   );
