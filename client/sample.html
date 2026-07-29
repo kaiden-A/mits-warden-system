@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log Tugas — Laporan Harian &amp; Semakan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1E2430;
+    --ink-soft:#2B3244;
+    --ink-line:#3A4258;
+    --paper:#F6F2E8;
+    --paper-raised:#FBF9F3;
+    --paper-line:#E2DAC4;
+    --brass:#A7802E;
+    --brass-deep:#7C5E1F;
+    --brass-wash:#EFE3C4;
+    --red:#A23E30;
+    --red-wash:#F3DFDA;
+    --green:#43604B;
+    --green-wash:#DEE7DD;
+    --ink-text:#2A2620;
+    --dim-text:#7A7261;
+    --radius:3px;
+    --shadow: 0 1px 2px rgba(30,20,10,0.08), 0 8px 24px rgba(30,20,10,0.06);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink-text);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    margin:0;
+    color:var(--ink-text);
+  }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  button{ font-family:inherit; cursor:pointer; }
+  input, select, textarea{ font-family:inherit; }
+  a{ color:inherit; }
+
+  :focus-visible{
+    outline: 2px solid var(--brass);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap;
+  }
+
+  .stamp{
+    display:inline-flex;
+    align-items:center;
+    gap:.35em;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.68rem;
+    font-weight:600;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    padding:.32em .62em;
+    border:1.5px solid currentColor;
+    border-radius:2px;
+    transform:rotate(-2.5deg);
+    line-height:1;
+    white-space:nowrap;
+  }
+  .stamp::before{ content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+  .stamp--draft{ color:var(--dim-text); background:transparent; }
+  .stamp--submitted{ color:var(--brass-deep); background:var(--brass-wash); }
+  .stamp--reviewed{ color:var(--green); background:var(--green-wash); }
+  .stamp--flagged{ color:var(--red); background:var(--red-wash); }
+  .stamp--active{ color:var(--green); background:var(--green-wash); transform:rotate(0); }
+  .stamp--revoked{ color:var(--red); background:var(--red-wash); transform:rotate(0); }
+
+  #login-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #2A3348 0%, transparent 60%),
+      var(--ink);
+    padding:2rem 1rem;
+  }
+  .login-card{
+    width:100%;
+    max-width:380px;
+    background:var(--paper-raised);
+    border-radius:6px;
+    box-shadow:var(--shadow);
+    padding:2.25rem 2rem 2rem;
+  }
+  .wordmark{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    margin-bottom:1.6rem;
+  }
+  .wordmark .crest{
+    width:44px; height:44px;
+    border:2px solid var(--brass);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:900; font-size:1.2rem;
+    color:var(--brass-deep);
+    margin-bottom:.6rem;
+  }
+  .wordmark h1{ font-size:1.5rem; letter-spacing:.01em; }
+  .wordmark p{ margin:.25rem 0 0; font-size:.78rem; color:var(--dim-text); font-family:'IBM Plex Mono',monospace; letter-spacing:.04em; text-transform:uppercase; }
+
+  .role-toggle{
+    display:flex;
+    border:1px solid var(--paper-line);
+    border-radius:4px;
+    overflow:hidden;
+    margin-bottom:1.4rem;
+  }
+  .role-toggle button{
+    flex:1;
+    padding:.6rem 0;
+    background:transparent;
+    border:none;
+    font-size:.78rem;
+    font-weight:600;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--dim-text);
+    border-right:1px solid var(--paper-line);
+  }
+  .role-toggle button:last-child{ border-right:none; }
+  .role-toggle button.active{
+    background:var(--ink);
+    color:var(--paper);
+  }
+
+  .field{ margin-bottom:1rem; }
+  .field label{
+    display:block;
+    font-size:.72rem;
+    font-weight:600;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--dim-text);
+    margin-bottom:.4rem;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:.62rem .7rem;
+    border:1px solid var(--paper-line);
+    border-radius:4px;
+    background:#fff;
+    font-size:.92rem;
+    color:var(--ink-text);
+  }
+  .field select{ background-color:#fff; }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.4rem;
+    border:none;
+    border-radius:4px;
+    padding:.66rem 1.1rem;
+    font-size:.86rem;
+    font-weight:600;
+    letter-spacing:.01em;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--ink); color:var(--paper); width:100%; }
+  .btn-primary:hover{ background:var(--ink-soft); }
+  .btn-brass{ background:var(--brass); color:#fff; }
+  .btn-brass:hover{ background:var(--brass-deep); }
+  .btn-ghost{ background:transparent; color:var(--ink-text); border:1px solid var(--paper-line); }
+  .btn-ghost:hover{ background:var(--paper); }
+  .btn-danger{ background:transparent; color:var(--red); border:1px solid var(--red); }
+  .btn-danger:hover{ background:var(--red-wash); }
+  .btn-sm{ padding:.42rem .75rem; font-size:.76rem; }
+  .btn-lg{ padding:.85rem 2rem; font-size:1rem; }
+
+  .login-hint{
+    text-align:center;
+    font-size:.72rem;
+    color:var(--dim-text);
+    margin-top:1rem;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .login-error{
+    font-size:.78rem;
+    color:var(--red);
+    margin:-.4rem 0 1rem;
+    display:none;
+  }
+
+  #app-screen{ display:none; min-height:100vh; }
+  .shell{ display:flex; min-height:100vh; }
+
+  .sidebar{
+    width:236px;
+    flex-shrink:0;
+    background:var(--ink);
+    color:var(--paper);
+    display:flex;
+    flex-direction:column;
+    padding:1.4rem 0 1rem;
+  }
+  .sidebar .wordmark-side{
+    display:flex; align-items:center; gap:.6rem;
+    padding:0 1.2rem 1.3rem;
+    border-bottom:1px solid var(--ink-line);
+    margin-bottom:.9rem;
+  }
+  .sidebar .crest-side{
+    width:32px; height:32px; border:2px solid var(--brass);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:900; font-size:.9rem; color:var(--brass);
+    flex-shrink:0;
+  }
+  .sidebar .wordmark-side h1{ font-size:1.02rem; color:var(--paper); }
+  .sidebar .wordmark-side p{ margin:.1rem 0 0; font-size:.62rem; color:#8B93A8; text-transform:uppercase; letter-spacing:.06em; font-family:'IBM Plex Mono',monospace; }
+
+  .nav-tabs{ list-style:none; margin:0; padding:0; flex:1; }
+  .nav-tab{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:.65rem;
+    padding:.75rem 1.2rem;
+    margin:.15rem .6rem .15rem 0;
+    color:#B7BDCC;
+    font-size:.88rem;
+    font-weight:500;
+    border:none;
+    background:transparent;
+    width:calc(100% - 0.6rem);
+    text-align:left;
+    border-radius:0 20px 20px 0;
+  }
+  .nav-tab .dot{ width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.5; flex-shrink:0; }
+  .nav-tab:hover{ color:var(--paper); background:var(--ink-soft); }
+  .nav-tab.active{
+    background:var(--paper);
+    color:var(--ink);
+    font-weight:600;
+  }
+  .nav-tab.active .dot{ background:var(--brass); opacity:1; }
+
+  .sidebar-footer{
+    padding:.9rem 1.2rem 0;
+    border-top:1px solid var(--ink-line);
+    margin-top:.6rem;
+  }
+  .sidebar-footer .who{ font-size:.82rem; color:var(--paper); font-weight:600; }
+  .sidebar-footer .role{ font-size:.68rem; color:#8B93A8; text-transform:uppercase; letter-spacing:.05em; font-family:'IBM Plex Mono',monospace; margin:.15rem 0 .7rem; }
+  .signout{
+    background:transparent; border:1px solid var(--ink-line); color:#C7CCDA;
+    width:100%; padding:.5rem; border-radius:4px; font-size:.76rem;
+  }
+  .signout:hover{ background:var(--ink-soft); }
+
+  .main{
+    flex:1;
+    padding:2rem 2.4rem 3rem;
+    min-width:0;
+  }
+  .main-header{
+    display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:.8rem;
+    margin-bottom:1.6rem;
+  }
+  .main-header h2{ font-size:1.5rem; }
+  .main-header .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:.72rem; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--dim-text); margin-bottom:.3rem; display:block;
+  }
+
+  .panel{
+    background:var(--paper-raised);
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    padding:1.4rem;
+  }
+  .panel + .panel{ margin-top:1.2rem; }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.4rem; }
+  .stat-card{
+    background:var(--paper-raised); border:1px solid var(--paper-line); border-radius:6px;
+    padding:1.1rem 1.2rem;
+  }
+  .stat-card .num{ font-family:'Fraunces',serif; font-weight:700; font-size:2rem; line-height:1; }
+  .stat-card .label{ font-size:.74rem; color:var(--dim-text); text-transform:uppercase; letter-spacing:.05em; margin-top:.4rem; font-family:'IBM Plex Mono',monospace; }
+  .stat-card.accent .num{ color:var(--brass-deep); }
+  .stat-card.warn .num{ color:var(--red); }
+  .stat-card.good .num{ color:var(--green); }
+
+  .ledger{ list-style:none; margin:0; padding:0; }
+  .ledger li{
+    display:flex; align-items:center; gap:1rem;
+    padding:.85rem 0;
+    border-bottom:1px solid var(--paper-line);
+  }
+  .ledger li:last-child{ border-bottom:none; }
+  .ledger .who{ font-weight:600; font-size:.9rem; min-width:140px; }
+  .ledger .meta{ font-family:'IBM Plex Mono',monospace; font-size:.76rem; color:var(--dim-text); }
+  .ledger .snippet{ flex:1; font-size:.84rem; color:var(--ink-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .roster{ width:100%; border-collapse:collapse; }
+  .roster th{
+    text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--dim-text); font-family:'IBM Plex Mono',monospace; font-weight:600;
+    padding:.5rem .6rem; border-bottom:1.5px solid var(--paper-line);
+  }
+  .roster td{ padding:.85rem .6rem; border-bottom:1px solid var(--paper-line); font-size:.88rem; vertical-align:middle; }
+  .roster tr:last-child td{ border-bottom:none; }
+  .badge-id{ font-family:'IBM Plex Mono',monospace; color:var(--dim-text); font-size:.82rem; }
+  .roster .actions{ display:flex; gap:.5rem; justify-content:flex-end; }
+
+  .section-toolbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:.7rem; }
+
+  .reports-layout{ display:grid; grid-template-columns:220px 1fr; gap:1.2rem; align-items:start; }
+  .warden-picker{ list-style:none; margin:0; padding:0; }
+  .warden-picker li button{
+    width:100%; text-align:left; background:transparent; border:none; border-left:3px solid transparent;
+    padding:.7rem .9rem; font-size:.86rem; color:var(--ink-text); border-radius:0 4px 4px 0;
+  }
+  .warden-picker li button:hover{ background:var(--paper); }
+  .warden-picker li button.active{ background:var(--brass-wash); border-left-color:var(--brass); font-weight:600; }
+  .warden-picker .sub{ display:block; font-size:.7rem; color:var(--dim-text); font-family:'IBM Plex Mono',monospace; margin-top:.15rem; }
+
+  .week-flip{
+    display:flex; align-items:center; justify-content:center; gap:.9rem;
+    font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:.86rem;
+    text-transform:uppercase; letter-spacing:.05em;
+    padding:.7rem; margin-bottom:.6rem;
+    background:var(--ink); color:var(--paper); border-radius:6px;
+  }
+  .week-flip button{
+    background:transparent; border:1px solid var(--ink-line); color:var(--paper);
+    width:28px; height:28px; border-radius:50%; font-size:1rem; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .week-flip button:hover{ background:var(--ink-soft); }
+  .week-flip button:disabled{ opacity:.35; cursor:not-allowed; }
+  .week-flip .this-week-btn{
+    width:auto; border-radius:4px; padding:0 .6rem; font-size:.68rem; color:var(--brass); border-color:var(--brass);
+  }
+
+  .day-row{
+    display:flex; align-items:center; gap:1rem;
+    padding:.9rem .3rem;
+    border-bottom:1px solid var(--paper-line);
+  }
+  .day-row:last-child{ border-bottom:none; }
+  .day-row .date-block{ width:78px; flex-shrink:0; }
+  .day-row .date-block .d{ font-family:'Fraunces',serif; font-weight:700; font-size:1.15rem; line-height:1; }
+  .day-row .date-block .m{ font-size:.68rem; color:var(--dim-text); text-transform:uppercase; font-family:'IBM Plex Mono',monospace; }
+  .day-row .content{ flex:1; min-width:0; }
+  .day-row .content .snip{ font-size:.84rem; color:var(--ink-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .day-row .content .meta{ font-size:.72rem; color:var(--dim-text); font-family:'IBM Plex Mono',monospace; margin-top:.2rem; }
+  .day-row.empty .content .snip{ color:var(--dim-text); font-style:italic; }
+  .day-row .actions{ flex-shrink:0; }
+
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .form-grid .field.full{ grid-column:1/-1; }
+  textarea{
+    width:100%; min-height:110px; padding:.7rem .8rem; border:1px solid var(--paper-line);
+    border-radius:4px; font-size:.9rem; resize:vertical; background:#fff; color:var(--ink-text);
+  }
+  .form-actions{ display:flex; justify-content:flex-end; gap:.6rem; margin-top:1.2rem; padding-top:1.1rem; border-top:1px solid var(--paper-line); }
+
+  .empty-state{ text-align:center; padding:2.4rem 1rem; color:var(--dim-text); }
+  .empty-state h3{ color:var(--ink-text); font-size:1.1rem; margin-bottom:.4rem; }
+  .empty-state p{ font-size:.86rem; max-width:340px; margin:0 auto; }
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(20,16,10,.45);
+    display:none; align-items:center; justify-content:center; padding:1.2rem; z-index:50;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal{
+    background:var(--paper-raised); border-radius:8px; box-shadow:var(--shadow);
+    width:100%; max-width:620px; max-height:88vh; overflow-y:auto; padding:1.6rem;
+  }
+  .modal-head{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:1.1rem; gap:1rem; }
+  .modal-head h3{ font-size:1.15rem; }
+  .modal-close{ background:transparent; border:none; font-size:1.3rem; color:var(--dim-text); line-height:1; padding:.1rem .3rem; }
+  .modal-close:hover{ color:var(--ink-text); }
+
+  .toast{
+    position:fixed; bottom:1.4rem; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); padding:.7rem 1.1rem; border-radius:5px;
+    font-size:.84rem; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+    z-index:80;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ===== ACCORDION / COLLAPSIBLE SECTIONS ===== */
+  .section-header{
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem .2rem;
+    cursor:pointer;
+    user-select:none;
+    border-bottom:1px solid var(--paper-line);
+  }
+  .section-header:hover{ background:var(--paper); border-radius:3px; }
+  .section-header h4{ flex:1; font-size:.92rem; }
+  .chevron{ transition:transform .25s ease; font-size:.65rem; color:var(--dim-text); font-family:'IBM Plex Mono',monospace; }
+  .chevron.open{ transform:rotate(90deg); }
+  .section-body{ overflow:hidden; max-height:0; transition:max-height .35s ease; }
+  .section-body.open{ max-height:2500px; }
+  .section-inner{ padding:.7rem 0; }
+
+  /* ===== RATING TABLE ===== */
+  .rating-table{ width:100%; border-collapse:collapse; }
+  .rating-table th{
+    text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--dim-text); font-family:'IBM Plex Mono',monospace; font-weight:600;
+    padding:.4rem .2rem .4rem .6rem; border-bottom:1.5px solid var(--paper-line);
+  }
+  .rating-table th:last-child{ text-align:right; padding-right:.6rem; }
+  .rating-table td{ padding:.4rem .2rem .4rem .6rem; border-bottom:1px solid var(--paper-line); font-size:.86rem; }
+  .rating-table td:last-child{ text-align:right; padding-right:.6rem; }
+  .rating-table tr:last-child td{ border-bottom:none; }
+
+  select.rating-select{
+    padding:.28rem .5rem; border:1px solid var(--paper-line); border-radius:3px;
+    font-size:.82rem; font-weight:600; min-width:62px; text-align:center;
+    background:#fff; cursor:pointer;
+  }
+  select.rating-1{ background:#F3DFDA; border-color:#D4A89E; }
+  select.rating-2{ background:#FDEBD0; border-color:#E8C587; }
+  select.rating-3{ background:#D6EAF8; border-color:#8BB9D6; }
+  select.rating-4{ background:#DEE7DD; border-color:#8AAA8A; }
+  select.rating-NA{ background:#EEEEEE; border-color:#CCCCCC; }
+
+  .rating-badge{
+    display:inline-block; padding:.15rem .5rem; border-radius:3px;
+    font-weight:600; font-size:.82rem; min-width:28px; text-align:center;
+  }
+  .rating-badge.rating-1{ background:#F3DFDA; color:#A23E30; }
+  .rating-badge.rating-2{ background:#FDEBD0; color:#8B6914; }
+  .rating-badge.rating-3{ background:#D6EAF8; color:#1A5276; }
+  .rating-badge.rating-4{ background:#DEE7DD; color:#43604B; }
+  .rating-badge.rating-NA{ background:#EEEEEE; color:#999; }
+
+  /* ===== HEADER GRID (form top) ===== */
+  .header-grid{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:.8rem; margin-bottom:1.2rem;
+    padding-bottom:1rem; border-bottom:1px solid var(--paper-line);
+  }
+  .header-grid .field{ margin-bottom:0; }
+  .header-grid .field label{ font-size:.66rem; }
+  .header-grid .field .static-value{
+    padding:.62rem .7rem; background:var(--paper); border-radius:4px;
+    font-size:.88rem; color:var(--ink-text); font-weight:500;
+    line-height:1.4; min-height:38px;
+  }
+  .header-grid .field input{ font-size:.88rem; }
+
+  /* ===== SECURITY RATING (1-5) ===== */
+  .security-group{ display:flex; gap:.5rem; flex-wrap:wrap; }
+  .security-group label{
+    display:flex; flex-direction:column; align-items:center; gap:.1rem;
+    padding:.45rem .6rem; border:1.5px solid var(--paper-line); border-radius:4px;
+    cursor:pointer; font-size:.82rem; font-weight:600; min-width:48px;
+    transition:background .15s, border-color .15s; text-align:center;
+  }
+  .security-group label:hover{ border-color:var(--brass); }
+  .security-group input[type="radio"]{ display:none; }
+  .security-group label:has(input:checked),
+  .security-group label.selected{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .sec-label{ display:block; line-height:1.2; pointer-events:none; }
+  .sec-label .num{ font-size:1rem; font-weight:700; }
+  .sec-label .desc{ font-size:.55rem; font-weight:400; opacity:.7; white-space:nowrap; }
+
+  /* ===== ADMIN INLINE DETAIL ===== */
+  .report-inline{ display:none; padding:1rem 1rem 1rem 1.2rem; background:var(--paper); border-top:1px solid var(--paper-line); }
+  .report-inline.open{ display:block; }
+
+  .detail-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+  .detail-grid .detail-section{ margin-bottom:.8rem; }
+  .detail-grid .detail-section.full{ grid-column:1/-1; }
+  .detail-grid .detail-section h5{
+    font-family:'Fraunces',serif; font-size:.85rem; font-weight:600;
+    margin-bottom:.45rem; color:var(--ink-text);
+  }
+  .detail-grid .detail-section .txt{ font-size:.84rem; color:var(--ink-text); white-space:pre-wrap; }
+  .detail-grid .detail-section .hint{ font-size:.72rem; color:var(--dim-text); margin-bottom:.3rem; }
+  .admin-note-area{ margin-top:1rem; padding-top:1rem; border-top:1px solid var(--paper-line); }
+  .admin-note-area label{ font-size:.72rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--dim-text); display:block; margin-bottom:.4rem; }
+  .admin-note-area textarea{ min-height:60px; }
+
+  .day-row.clickable{ cursor:pointer; }
+  .day-row.clickable:hover{ background:var(--paper); }
+  .day-row .expand-icon{ font-size:.65rem; color:var(--dim-text); transition:transform .2s; font-family:'IBM Plex Mono',monospace; }
+  .day-row .expand-icon.open{ transform:rotate(90deg); }
+
+  /* ===== DASHBOARD ===== */
+  .dash-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1.2rem; }
+  .dash-card{
+    background:var(--paper-raised); border:1px solid var(--paper-line); border-radius:6px;
+    padding:1.2rem 1.2rem 1rem;
+  }
+  .dash-card .num{ font-family:'Fraunces',serif; font-weight:700; font-size:1.8rem; line-height:1; }
+  .dash-card .label{ font-size:.7rem; color:var(--dim-text); text-transform:uppercase; letter-spacing:.05em; margin-top:.3rem; font-family:'IBM Plex Mono',monospace; }
+  .dash-card.accent .num{ color:var(--brass-deep); }
+  .dash-card.good .num{ color:var(--green); }
+  .dash-card.warn .num{ color:var(--red); }
+  .dash-card.neutral .num{ color:var(--ink-text); }
+
+  .dash-today{
+    display:flex; align-items:center; gap:1rem;
+    padding:1.2rem; background:var(--paper-raised); border:1px solid var(--paper-line); border-radius:6px;
+  }
+  .dash-today .info{ flex:1; }
+  .dash-today .info h3{ font-size:1.05rem; margin-bottom:.25rem; }
+  .dash-today .info p{ font-size:.84rem; color:var(--dim-text); margin:0; }
+
+  .week-progress{ display:flex; gap:.6rem; justify-content:center; }
+  .week-progress .day-box{
+    display:flex; flex-direction:column; align-items:center; gap:.2rem;
+    padding:.55rem .65rem; border-radius:5px; min-width:56px;
+    background:var(--paper-raised); border:1px solid var(--paper-line);
+  }
+  .week-progress .day-box .day-name{ font-size:.6rem; text-transform:uppercase; letter-spacing:.04em; color:var(--dim-text); font-family:'IBM Plex Mono',monospace; }
+  .week-progress .day-box .day-num{ font-size:.9rem; font-weight:600; }
+  .week-progress .day-box .day-check{ font-size:.75rem; margin-top:.1rem; }
+  .week-progress .day-box.done{ background:var(--green-wash); border-color:#8AAA8A; }
+  .week-progress .day-box.missed{ background:var(--red-wash); border-color:#D4A89E; }
+  .week-progress .day-box.pending{ background:var(--paper); }
+  .week-progress .day-box.today{ border-color:var(--brass); border-width:2px; }
+  .week-progress .day-box.today.pending{ background:var(--brass-wash); }
+
+  /* ===== APPROVAL TRAIL ===== */
+  .approval-trail{ margin-top:1rem; padding-top:.8rem; border-top:1px solid var(--paper-line); }
+  .approval-line{
+    display:flex; align-items:center; gap:.45rem;
+    font-size:.8rem; color:var(--dim-text); margin-bottom:.3rem;
+  }
+  .approval-line .dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .approval-line .dot.drafted{ background:#aaa; }
+  .approval-line .dot.submitted{ background:var(--brass); }
+  .approval-line .dot.reviewed{ background:var(--green); }
+  .approval-line .dot.flagged{ background:var(--red); }
+  .approval-line strong{ color:var(--ink-text); }
+
+  /* ===== TODAY EMPTY / RECORDED ===== */
+  .today-empty{ text-align:center; padding:2.5rem 1.4rem; }
+  .today-recorded{ text-align:center; padding:2rem 1.4rem; }
+  .today-recorded .summary{ font-size:.86rem; color:var(--dim-text); margin:.4rem 0 1.2rem; }
+
+  .form-actions-top{
+    display:flex; justify-content:flex-end; gap:.6rem;
+    margin-bottom:1.2rem; padding-bottom:1rem; border-bottom:1px solid var(--paper-line);
+  }
+
+  /* ===== DASHBOARD RECAP ===== */
+  .rekap-list{ display:flex; flex-direction:column; gap:.6rem; }
+  .rekap-day{ padding:.6rem .8rem; background:var(--paper); border-radius:4px; }
+  .rekap-day-head{ font-family:'Fraunces',serif; font-weight:600; font-size:.9rem; color:var(--ink-text); margin-bottom:.4rem; }
+  .rekap-row{ display:flex; align-items:center; gap:.6rem; padding:.3rem 0; font-size:.84rem; }
+  .rekap-hostel{ font-weight:600; min-width:110px; color:var(--ink-text); }
+  .rekap-duty{ font-size:.78rem; color:var(--dim-text); min-width:180px; }
+  .rekap-status{ flex:1; font-size:.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* ===== SUBSTITUTION TAG ===== */
+  .sub-tag{
+    display:inline-flex; align-items:center; gap:.2em;
+    font-family:'IBM Plex Mono',monospace; font-size:.62rem; font-weight:600;
+    letter-spacing:.05em; text-transform:uppercase;
+    padding:.15em .45em; border:1px solid var(--brass); border-radius:2px;
+    color:var(--brass-deep); background:var(--brass-wash);
+    white-space:nowrap; vertical-align:middle;
+    transform:rotate(-2deg);
+  }
+
+  /* ===== NOTICE BANNER ===== */
+  .notice-banner{
+    display:flex; align-items:center; gap:.6rem;
+    padding:.7rem 1rem; margin-bottom:1rem;
+    background:var(--brass-wash); border:1px solid var(--paper-line); border-left:3px solid var(--brass);
+    border-radius:4px; font-size:.86rem; color:var(--ink-text);
+  }
+
+  /* ===== ADMIN SCHEDULE TABLE ===== */
+  .schedule-table select{
+    width:100%; padding:.55rem .7rem; border:1px solid var(--paper-line);
+    border-radius:4px; font-size:.88rem; background:#fff; color:var(--ink-text);
+  }
+
+  /* ===== MATERIAL ICONS ===== */
+  .m-icon{
+    font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;
+    display:inline-block;line-height:1;text-transform:none;letter-spacing:normal;
+    word-wrap:normal;white-space:nowrap;direction:ltr;vertical-align:middle;
+    font-variation-settings:'FILL'0,'wght'400,'GRAD'0,'opsz'24;
+  }
+  .m-icon--green{color:var(--green);}
+  .m-icon--red{color:var(--red);}
+  .m-icon--brass{color:var(--brass-deep);}
+  .m-icon--dim{color:var(--dim-text);}
+  .m-icon--ink{color:var(--ink-text);}
+
+  @media (max-width: 860px){
+    .stat-grid{ grid-template-columns:repeat(2,1fr); }
+    .reports-layout{ grid-template-columns:1fr; }
+    .header-grid{ grid-template-columns:repeat(3,1fr); }
+    .detail-grid{ grid-template-columns:1fr; }
+    .dash-grid{ grid-template-columns:1fr 1fr; }
+    .week-progress{ flex-wrap:wrap; }
+  }
+  @media (max-width: 720px){
+    .shell{ flex-direction:column; }
+    .sidebar{ width:100%; flex-direction:row; align-items:center; padding:.7rem .8rem; overflow-x:auto; }
+    .sidebar .wordmark-side{ border-bottom:none; border-right:1px solid var(--ink-line); padding:0 1rem 0 0; margin:0 .8rem 0 0; flex-shrink:0; }
+    .nav-tabs{ display:flex; flex:none; }
+    .nav-tab{ border-radius:20px; margin:0 .3rem 0 0; white-space:nowrap; }
+    .sidebar-footer{ display:none; }
+    .main{ padding:1.4rem 1.1rem 2.4rem; }
+    .form-grid{ grid-template-columns:1fr; }
+    .stat-grid{ grid-template-columns:1fr 1fr; }
+    .header-grid{ grid-template-columns:1fr 1fr; }
+    .dash-grid{ grid-template-columns:1fr; }
+    .week-progress{ flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="wordmark">
+      <div class="crest">LT</div>
+      <h1>Log Tugas</h1>
+      <p>Laporan Harian &amp; Semakan</p>
+    </div>
+
+    <div class="role-toggle" role="tablist" aria-label="Daftar sebagai">
+      <button type="button" class="active" data-role="warden" onclick="setLoginRole('warden')">Warden</button>
+      <button type="button" data-role="admin" onclick="setLoginRole('admin')">Pengurusan</button>
+    </div>
+
+    <div class="field" id="warden-select-field">
+      <label for="login-warden">Daftar sebagai</label>
+      <select id="login-warden"></select>
+    </div>
+
+    <div class="field">
+      <label for="login-pass">Kata Laluan</label>
+      <input type="password" id="login-pass" placeholder="••••••••" value="demo1234">
+    </div>
+
+    <p class="login-error" id="login-error">ID lencana atau kata laluan tidak dikenali.</p>
+
+    <button type="button" class="btn btn-primary" onclick="attemptLogin()">Daftar Masuk</button>
+    <p class="login-hint">Prototaip reka bentuk — sebarang kata laluan sah</p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app-screen">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="wordmark-side">
+        <div class="crest-side">LT</div>
+        <div>
+          <h1>Log Tugas</h1>
+          <p id="sidebar-mode">Warden</p>
+        </div>
+      </div>
+      <ul class="nav-tabs" id="nav-tabs"></ul>
+      <div class="sidebar-footer">
+        <div class="who" id="sidebar-who">—</div>
+        <div class="role" id="sidebar-role">—</div>
+        <button type="button" class="signout" onclick="signOut()">Log Keluar</button>
+      </div>
+    </aside>
+    <main class="main" id="main-content"></main>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-box"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   LOG TUGAS — Laporan Harian & Semakan (design mockup)
+   In-memory data. All user-facing labels in Malay.
+   ============================================================ */
+
+/* ---------- constants ---------- */
+const TODAY = new Date('2026-07-29T00:00:00');
+
+const MALAY_DAYS = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+
+const RATING_OPTS = [
+  { value: '1', label: '1', title: 'Tidak Memuaskan' },
+  { value: '2', label: '2', title: 'Sederhana' },
+  { value: '3', label: '3', title: 'Baik' },
+  { value: '4', label: '4', title: 'Cemerlang' },
+  { value: 'NA', label: 'N/A', title: 'Tiada Kaitan' },
+];
+
+const ARAS_SHARED = [
+  { key: 'bilikDorm', label: 'Bilik Dorm' },
+  { key: 'koridor', label: 'Koridor' },
+  { key: 'bilikPantri', label: 'Bilik Pantri' },
+  { key: 'tandas', label: 'Tandas' },
+  { key: 'bilikPrep', label: 'Bilik Prep' },
+  { key: 'bilikIron', label: 'Bilik Iron' },
+  { key: 'bilikRekreasi', label: 'Bilik Rekreasi' },
+];
+
+const SECTIONS_CONFIG = [
+  {
+    id: 'rutinAktivitiMurid', title: '1. Rutin Aktiviti Murid',
+    items: [
+      { key: 'halaqahQuran', label: 'Halaqah Quran' },
+      { key: 'rollCall', label: 'Roll Call' },
+      { key: 'riadhah', label: 'Riadhah' },
+      { key: 'muraqabah', label: 'Muraqabah' },
+      { key: 'prep', label: 'Prep / Kelas Tambahan (Malam)' },
+      { key: 'tabassam', label: 'Tabassam / Prep (Sabtu & Ahad)' },
+      { key: 'melawat', label: 'Melawat / Keluar Bandar' },
+      { key: 'gotongRoyong', label: 'Gotong-Royong' },
+      { key: 'tidur', label: 'Tidur' },
+    ],
+  },
+  {
+    id: 'tarbiyyahRohaniyyah', title: '2. Tarbiyyah / Rohaniyyah',
+    items: [
+      { key: 'qiamullail', label: 'Qiamullail Jamaie (Ahad)' },
+      { key: 'kuliahSubuh', label: 'Kuliah Subuh (Sabtu & Ahad)' },
+      { key: 'subuh', label: 'Subuh / Azkar' },
+      { key: 'zohor', label: 'Zohor (Sabtu & Ahad)' },
+      { key: 'asar', label: 'Asar' },
+      { key: 'azkarMaghrib', label: 'Azkar / Maghrib' },
+      { key: 'kuliahMaghrib', label: 'Kuliah Maghrib (Sabtu & Ahad)' },
+      { key: 'isya', label: "Isya'" },
+      { key: 'usrahMurid', label: 'Usrah Murid (Sabtu & Ahad)' },
+      { key: 'bacaanAlMulk', label: 'Bacaan Surah Al-Mulk' },
+    ],
+  },
+  {
+    id: 'kebersihanArasBawah', title: '3. Kebersihan Aras Bawah',
+    items: [
+      { key: 'lobi', label: 'Lobi Asrama' },
+      { key: 'musolla', label: 'Musolla' },
+      { key: 'storSukan', label: 'Stor Sukan' },
+      { key: 'storKebersihan', label: 'Stor Kebersihan' },
+      { key: 'bilikDobi', label: 'Bilik Dobi' },
+      { key: 'bilikIsolasi', label: 'Bilik Isolasi' },
+      { key: 'bilikICT', label: 'Bilik ICT' },
+      { key: 'tandas', label: 'Tandas' },
+      { key: 'ampaiBaju', label: 'Ampai Baju' },
+    ],
+  },
+  { id: 'kebersihanAras1', title: '4. Kebersihan Aras 1', items: ARAS_SHARED },
+  { id: 'kebersihanAras2', title: '5. Kebersihan Aras 2', items: ARAS_SHARED },
+  { id: 'kebersihanAras3', title: '6. Kebersihan Aras 3', items: ARAS_SHARED },
+  {
+    id: 'dewanMakan', title: '7. Dewan Makan',
+    items: [
+      { key: 'sarapan', label: 'Sarapan' },
+      { key: 'minumPagi', label: 'Minum Pagi (Sabtu & Ahad)' },
+      { key: 'makanTengahari', label: 'Makan Tengahari' },
+      { key: 'minumPetang', label: 'Minum Petang' },
+      { key: 'makanMalam', label: 'Makan Malam' },
+      { key: 'minumMalam', label: 'Minum Malam' },
+    ],
+  },
+];
+
+const ALL_SECTION_IDS = SECTIONS_CONFIG.map(s => s.id);
+
+/* ---------- helpers ---------- */
+function iso(d){ return d.toISOString().slice(0,10); }
+function addDays(d, n){ const nd = new Date(d); nd.setDate(nd.getDate()+n); return nd; }
+function fromISO(s){ return new Date(s+'T00:00:00'); }
+function fmtShort(d){ return d.toLocaleDateString('en-US',{month:'short', day:'numeric'}); }
+function fmtLong(d){
+  return MALAY_DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + d.toLocaleDateString('en-US',{month:'long', year:'numeric'});
+}
+function fmtDatetime(isoStr){
+  if(!isoStr) return '—';
+  const d = new Date(isoStr);
+  return d.getDate() + ' ' + d.toLocaleDateString('en',{month:'short'}) + ' ' + d.getFullYear() + ', '
+    + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function malayDay(d){ return MALAY_DAYS[d.getDay()]; }
+function mondayOf(d){
+  const nd = new Date(d);
+  const day = nd.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  nd.setDate(nd.getDate()+diff);
+  return nd;
+}
+
+function escapeHTML(str){
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+/* ---------- report factory ---------- */
+function emptySectionValues(){
+  const obj = {};
+  SECTIONS_CONFIG.forEach(s => {
+    obj[s.id] = {};
+    s.items.forEach(item => { obj[s.id][item.key] = ''; });
+  });
+  return obj;
+}
+
+function makeReport(dateStr, status, adminNote, extras){
+  const sv = emptySectionValues();
+  const e = extras || {};
+  return {
+    date: dateStr,
+    status: status || 'draft',
+    adminNote: adminNote || '',
+    submittedAt: e.submittedAt || null,
+    reviewedBy: e.reviewedBy || null,
+    reviewedAt: e.reviewedAt || null,
+    flaggedBy: e.flaggedBy || null,
+    flaggedAt: e.flaggedAt || null,
+    submittedBy: e.submittedBy || null,
+    submittedByName: e.submittedByName || null,
+    dutyWardenId: e.dutyWardenId || null,
+    dutyWardenName: e.dutyWardenName || null,
+    isSubstitution: !!(e.submittedBy && e.dutyWardenId && e.submittedBy !== e.dutyWardenId),
+    inspectionTime: e.inspectionTime || '',
+    ...sv,
+    aduanKerosakan: e.aduanKerosakan || 'TKD',
+    muridSakit: e.muridSakit || 'TLB',
+    kawalanKeselamatan: e.kawalanKeselamatan || '',
+    catatanTambahan: e.catatanTambahan || '',
+    ...(e.sections || {}),
+  };
+}
+
+/* ---------- seed ---------- */
+// Weekly duty pattern used as fallback
+const ROT_MAP = { 1:'w1', 2:'w2', 3:'w3', 4:'w1', 5:'w2', 6:'w3', 0:'w1' };
+const ROT_MAP_PUTERI = { 1:'w4', 2:'w5', 3:'w6', 4:'w4', 5:'w5', 6:'w6', 0:'w4' };
+
+function getDutyWardenIds(date){
+  const ds = iso(date);
+  if(DB.roster[ds]) return DB.roster[ds];
+  const dow = date.getDay();
+  return { putera: ROT_MAP[dow], puteri: ROT_MAP_PUTERI[dow] };
+}
+
+function seedRoster(){
+  DB.roster = {};
+  for(let i = -14; i < 21; i++){
+    const d = addDays(TODAY, i);
+    const ds = iso(d);
+    const dow = d.getDay();
+    DB.roster[ds] = { putera: ROT_MAP[dow], puteri: ROT_MAP_PUTERI[dow] };
+  }
+}
+
+function pickAltWarden(hostel, excludeId){
+  const candidates = DB.wardens.filter(w => w.status === 'active' && w.hostel === hostel && w.id !== excludeId);
+  return candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : null;
+}
+
+const SEED_PATTERNS = [
+  ['X','S'], // i=0  Wed 29 Jul (TODAY): Putera no report, Puteri submitted
+  ['S','D'], // i=1  Tue 28 Jul: Putera submitted, Puteri draft
+  ['S','S'], // i=2  Mon 27 Jul: both submitted
+  ['X','S'], // i=3  Sun 26 Jul: Putera missed, Puteri submitted
+  ['S','X'], // i=4  Sat 25 Jul: Putera submitted, Puteri missed
+  ['S','S'], // i=5  Fri 24 Jul: both submitted
+  ['S','S'], // i=6  Thu 23 Jul: both submitted
+  ['D','S'], // i=7  Wed 22 Jul: Putera draft, Puteri submitted
+  ['S','S'], // i=8  Tue 21 Jul: both submitted
+  ['X','X'], // i=9  Mon 20 Jul: both missed
+  ['S','S'], // i=10 Sun 19 Jul: both submitted
+  ['S','X'], // i=11 Sat 18 Jul: Putera submitted, Puteri missed
+  ['S','S'], // i=12 Fri 17 Jul: both submitted
+  ['D','S'], // i=13 Thu 16 Jul: Putera draft, Puteri submitted
+  ['S','S'], // i=14 Wed 15 Jul: both submitted
+  ['X','D'], // i=15 Tue 14 Jul: Putera missed, Puteri draft
+  ['S','S'], // i=16 Mon 13 Jul: both submitted
+  ['S','S'], // i=17 Sun 12 Jul: both submitted
+];
+
+function generateAllReports(){
+  for(let i = 0; i < SEED_PATTERNS.length; i++){
+    const d = addDays(TODAY, -i);
+    const ds = iso(d);
+    const duty = getDutyWardenIds(d);
+    const [puteraFlag, puteriFlag] = SEED_PATTERNS[i];
+    if(puteraFlag !== 'X') createSeedReport(duty.putera, ds, puteraFlag, i, 'Asrama Putera', duty.putera);
+    if(puteriFlag !== 'X') createSeedReport(duty.puteri, ds, puteriFlag, i, 'Asrama Puteri', duty.puteri);
+  }
+}
+
+function createSeedReport(dutyWardenId, dateStr, flag, seedIdx, hostel, scheduledId){
+  const dutyW = DB.wardens.find(w => w.id === dutyWardenId);
+  if(!dutyW) return;
+  const isDraft = flag === 'D';
+  const inspTime = seedIdx % 2 === 0 ? '07:30' : '19:45';
+  const subAt = !isDraft ? (dateStr + 'T' + inspTime + ':00') : null;
+
+  // ~20% of submitted: a different warden from same hostel does the report (substitution)
+  let submitterW = dutyW;
+  let submitterId = dutyWardenId;
+  if(!isDraft && seedIdx % 5 === 3){
+    const alt = pickAltWarden(hostel, dutyWardenId);
+    if(alt){ submitterW = alt; submitterId = alt.id; }
+  }
+
+  let finalStatus = isDraft ? 'draft' : 'submitted';
+  let reviewedBy = null, reviewedAt = null, flaggedBy = null, flaggedAt = null, adminNote = '';
+
+  if(!isDraft && seedIdx % 3 === 0){
+    finalStatus = 'reviewed'; reviewedBy = 'C. Whitfield'; reviewedAt = dateStr + 'T10:30:00';
+  } else if(!isDraft && seedIdx % 7 === 5){
+    finalStatus = 'flagged'; flaggedBy = 'C. Whitfield'; flaggedAt = dateStr + 'T09:15:00'; adminNote = 'Sila semak laporan ini.';
+  }
+
+  const r = makeReport(dateStr, finalStatus, adminNote, {
+    inspectionTime: inspTime,
+    submittedAt: subAt, reviewedBy, reviewedAt, flaggedBy, flaggedAt,
+    submittedBy: submitterId,
+    submittedByName: submitterW.name,
+    dutyWardenId: scheduledId || dutyWardenId,
+    dutyWardenName: dutyW.name,
+    aduanKerosakan: seedIdx % 4 === 3 ? 'Kipas rosak 2 unit - Bilik 3.2\nLampu mati - Tandas Aras 1' : 'TKD',
+    muridSakit: seedIdx % 5 === 2 ? 'Ali Bin Ahmad (5N) - Demam' : 'TLB',
+    kawalanKeselamatan: String(Math.floor(Math.random() * 3) + 3),
+    catatanTambahan: seedIdx % 9 === 3 ? 'Kunjungan ibu bapa berjalan lancar.' : '',
+    sections: generateSeedSections(seedIdx),
+  });
+  submitterW.reports[dateStr] = r;
+}
+
+function generateSeedSections(seed){
+  const vals = ['1','2','3','4','NA'];
+  const s = {};
+  [0,1,2,3,4,5,6].forEach(idx => {
+    const cfg = SECTIONS_CONFIG[idx];
+    if(!cfg) return;
+    s[cfg.id] = {};
+    cfg.items.forEach((item, i) => {
+      s[cfg.id][item.key] = vals[(seed + idx + i) % vals.length];
+    });
+  });
+  return s;
+}
+
+/* ---------- DB (6 wardens) ---------- */
+const DB = {
+  wardens: [
+    { id:'w1', name:'Muhammad Faiz Bin Ahmad',    email:'faiz.ahmad@example.com',    hostel:'Asrama Putera', status:'active', reports:{} },
+    { id:'w2', name:'Ahmad Syafiq Bin Ismail',    email:'syafiq.ismail@example.com', hostel:'Asrama Putera', status:'active', reports:{} },
+    { id:'w3', name:'Khairul Azman Bin Razak',    email:'khairul.razak@example.com', hostel:'Asrama Putera', status:'active', reports:{} },
+    { id:'w4', name:'Nurul Aisyah Binti Hassan',  email:'aisyah.hassan@example.com', hostel:'Asrama Puteri', status:'active', reports:{} },
+    { id:'w5', name:'Siti Fatimah Binti Abdullah', email:'fatimah.abdullah@example.com', hostel:'Asrama Puteri', status:'active', reports:{} },
+    { id:'w6', name:'Aina Maisarah Binti Mohd',   email:'maisarah.mohd@example.com',    hostel:'Asrama Puteri', status:'active', reports:{} },
+  ],
+};
+seedRoster();
+generateAllReports();
+
+/* ---------- app state ---------- */
+const state = {
+  loginRole: 'warden',
+  session: null,
+  adminTab: 'overview',
+  wardenTab: 'dashboard',
+  selectedWardenId: null,
+  selectedWeekStart: iso(mondayOf(TODAY)),
+  editingReportDate: null,
+  showingForm: false,
+};
+
+/* ---------- login ---------- */
+function populateLoginWardens(){
+  const sel = document.getElementById('login-warden');
+  sel.innerHTML = '';
+  if(state.loginRole === 'warden'){
+    DB.wardens.filter(w=>w.status==='active').forEach(w=>{
+      const opt = document.createElement('option');
+      opt.value = w.id;
+      opt.textContent = w.name + ' — ' + w.hostel;
+      sel.appendChild(opt);
+    });
+  } else {
+    const opt = document.createElement('option');
+    opt.value = 'admin'; opt.textContent = 'C. Whitfield — Pengarah Fasiliti';
+    sel.appendChild(opt);
+  }
+}
+
+function setLoginRole(role){
+  state.loginRole = role;
+  document.querySelectorAll('.role-toggle button').forEach(b=>b.classList.toggle('active', b.dataset.role===role));
+  document.getElementById('warden-select-field').querySelector('label').textContent = role==='warden' ? 'Daftar sebagai' : 'Akaun Pengurusan';
+  populateLoginWardens();
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function attemptLogin(){
+  const sel = document.getElementById('login-warden').value;
+  if(state.loginRole === 'admin'){
+    state.session = { role:'admin' };
+  } else {
+    state.session = { role:'warden', wardenId: sel };
+  }
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  if(state.session.role === 'admin'){ state.adminTab='overview'; renderAdmin(); }
+  else { state.wardenTab='dashboard'; renderWarden(); }
+}
+
+function signOut(){
+  state.session = null;
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  closeModal();
+}
+
+/* ---------- toast ---------- */
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ---------- modal ---------- */
+function openModal(html, wide){
+  const box = document.getElementById('modal-box');
+  box.className = 'modal' + (wide ? ' wide':'');
+  box.innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('modal-box').innerHTML = '';
+}
+document.getElementById('modal-overlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'modal-overlay') closeModal();
+});
+
+/* ---------- shared utils ---------- */
+function getWarden(id){ return DB.wardens.find(w=>w.id===id); }
+
+function statusStampClass(status){
+  return { draft:'stamp--draft', submitted:'stamp--submitted', reviewed:'stamp--reviewed', flagged:'stamp--flagged' }[status] || 'stamp--draft';
+}
+function statusLabel(status){
+  return { draft:'Draf', submitted:'Dihantar', reviewed:'Disemak', flagged:'Ditanda' }[status] || status;
+}
+
+/* =================================================================
+   RENDER HELPERS
+   ================================================================= */
+
+function ratingSelectHTML(value, name, onChange){
+  const cls = 'rating-select' + (value ? ' rating-' + value : '');
+  const opts = ['', ...RATING_OPTS];
+  return `<select name="${name}" class="${cls}" onchange="${escapeHTML(onChange)}">
+    ${opts.map(o => `<option value="${o.value || ''}" ${(o.value||'') === value ? 'selected' : ''} ${o.title ? 'title="'+o.title+'"' : ''}>${o.label || '—'}</option>`).join('')}
+  </select>`;
+}
+
+function ratingBadgeHTML(value){
+  if(!value) return '<span class="rating-badge" style="background:#f0ede4;color:#999;">—</span>';
+  const cls = 'rating-badge rating-' + value;
+  const opt = RATING_OPTS.find(o => o.value === value);
+  return `<span class="${cls}" title="${opt ? opt.title : ''}">${opt ? opt.label : value}</span>`;
+}
+
+function ratingTableHTML(config, data){
+  return `<table class="rating-table">
+    <thead><tr><th>Perkara</th><th>Penilaian</th></tr></thead>
+    <tbody>
+      ${config.items.map(item => {
+        const val = (data && data[item.key]) || '';
+        const name = 'r_' + config.id + '_' + item.key;
+        return `<tr><td>${item.label}</td><td>${ratingSelectHTML(val, name, "onRatingChange(this)")}</td></tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function ratingTableReadOnlyHTML(config, data){
+  return `<table class="rating-table">
+    <thead><tr><th>Perkara</th><th>Penilaian</th></tr></thead>
+    <tbody>
+      ${config.items.map(item => {
+        const val = (data && data[item.key]) || '';
+        return `<tr><td>${item.label}</td><td>${ratingBadgeHTML(val)}</td></tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function sectionAccordionHTML(config, data, sectionIndex, open){
+  return `<div class="section-header" onclick="toggleSection(this)">
+    <span class="chevron ${open?'open':''}">&#9654;</span>
+    <h4>${config.title}</h4>
+  </div>
+  <div class="section-body ${open?'open':''}">
+    <div class="section-inner">${ratingTableHTML(config, data)}</div>
+  </div>`;
+}
+
+function sectionAccordionReadOnlyHTML(config, data){
+  return `<div class="section-header" onclick="toggleSection(this)">
+    <span class="chevron">&#9654;</span>
+    <h4>${config.title}</h4>
+  </div>
+  <div class="section-body">
+    <div class="section-inner">${ratingTableReadOnlyHTML(config, data)}</div>
+  </div>`;
+}
+
+function toggleSection(headerEl){
+  const body = headerEl.nextElementSibling;
+  const chevron = headerEl.querySelector('.chevron');
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+
+function onRatingChange(sel){
+  const val = sel.value;
+  sel.className = 'rating-select' + (val ? ' rating-' + val : '');
+}
+
+function approvalTrailHTML(r){
+  let html = '<div class="approval-trail">';
+  if(r.submittedAt){
+    html += `<div class="approval-line"><span class="dot submitted"></span> Dihantar pada <strong>${fmtDatetime(r.submittedAt)}</strong></div>`;
+  } else if(r.status !== 'draft'){
+    html += `<div class="approval-line"><span class="dot drafted"></span> Belum dihantar</div>`;
+  }
+  if(r.reviewedBy){
+    html += `<div class="approval-line"><span class="dot reviewed"></span> Disemak oleh <strong>${escapeHTML(r.reviewedBy)}</strong> pada ${fmtDatetime(r.reviewedAt)}</div>`;
+  }
+  if(r.flaggedBy){
+    html += `<div class="approval-line"><span class="dot flagged"></span> Ditanda oleh <strong>${escapeHTML(r.flaggedBy)}</strong> pada ${fmtDatetime(r.flaggedAt)}</div>`;
+  }
+  if(!r.submittedAt && !r.reviewedBy && !r.flaggedBy){
+    html += `<div class="approval-line" style="opacity:.5;">Tiada rekod penghantaran</div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+/* =================================================================
+   WARDEN VIEWS
+   ================================================================= */
+function renderWarden(){
+  renderNavTabs();
+  const main = document.getElementById('main-content');
+  if(state.wardenTab === 'dashboard') main.innerHTML = wardenDashboardHTML();
+  else if(state.wardenTab === 'today') main.innerHTML = wardenTodayHTML();
+  else main.innerHTML = wardenHistoryHTML();
+}
+
+/* --- Dashboard --- */
+function getReportsForDateHostel(ds){
+  const result = { putera: null, puteri: null };
+  DB.wardens.forEach(w => {
+    const r = w.reports[ds];
+    if(!r) return;
+    if(w.hostel === 'Asrama Putera' && !result.putera) result.putera = { ...r, _submitterWarden: w };
+    if(w.hostel === 'Asrama Puteri' && !result.puteri) result.puteri = { ...r, _submitterWarden: w };
+  });
+  return result;
+}
+
+function getAllReportsForWarden(wardenId){
+  const w = getWarden(wardenId);
+  if(!w) return {};
+  const merged = { ...(w.reports || {}) };
+  DB.wardens.filter(ow => ow.id !== wardenId).forEach(ow => {
+    Object.entries(ow.reports || {}).forEach(([ds, r]) => {
+      if(r.dutyWardenId === wardenId && !merged[ds]) merged[ds] = r;
+    });
+  });
+  return merged;
+}
+
+function subTagHTML(r){
+  if(!r || !r.isSubstitution) return '';
+  return ` <span class="sub-tag">bagi pihak ${escapeHTML(r.dutyWardenName || '')}</span>`;
+}
+
+function rekapIconHTML(r){
+  if(!r) return '<span class="m-icon m-icon--red" style="font-size:.9rem;">cancel</span> Tiada laporan';
+  if(r.status === 'draft') return `<span class="m-icon m-icon--dim" style="font-size:.9rem;">edit_note</span> ${r.isSubstitution ? 'Draf oleh ' + escapeHTML(r.submittedByName || '') + subTagHTML(r) : 'Draf'}`;
+  return `<span class="m-icon m-icon--green" style="font-size:.9rem;">check_circle</span> Dihantar oleh ${escapeHTML(r.submittedByName || (r._submitterWarden ? r._submitterWarden.name : ''))}${subTagHTML(r)}`;
+}
+
+function wardenDashboardHTML(){
+  const w = getWarden(state.session.wardenId);
+  const weekStart = mondayOf(TODAY);
+  const weekDays = Array.from({length:7}, (_,i)=>addDays(weekStart, i));
+  const todayDS = iso(TODAY);
+  const todayReport = w.reports[todayDS];
+  const allReports = getAllReportsForWarden(state.session.wardenId);
+  const weekReports = weekDays.map(d => allReports[iso(d)]).filter(Boolean);
+  const submittedThisWeek = weekReports.filter(r => r.status !== 'draft').length;
+  const totalReports = Object.keys(allReports).length;
+  const reviewedReports = Object.values(allReports).filter(r => r.status === 'reviewed').length;
+  const todayDuty = getDutyWardenIds(TODAY);
+  const isScheduledToday = todayDuty.putera === state.session.wardenId || todayDuty.puteri === state.session.wardenId;
+
+  // Past days of this week (Mon..yesterday)
+  const pastDays = weekDays.filter(d => d < TODAY);
+
+  return `
+    <div class="main-header">
+      <div><span class="eyebrow">${fmtLong(TODAY)}</span><h2>Dashboard</h2></div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-card neutral">
+        <div class="num">${totalReports}</div>
+        <div class="label">Jumlah Laporan</div>
+      </div>
+      <div class="dash-card accent">
+        <div class="num">${submittedThisWeek}</div>
+        <div class="label">Dihantar Minggu Ini</div>
+      </div>
+      <div class="dash-card good">
+        <div class="num">${reviewedReports}</div>
+        <div class="label">Telah Disemak</div>
+      </div>
+    </div>
+
+    <div class="dash-today" style="margin-bottom:1.2rem;">
+      ${todayReport
+        ? `<div style="font-size:2.6rem;line-height:1;">${todayReport.status === 'reviewed' ? '<span class="m-icon m-icon--green">check_circle</span>' : todayReport.status === 'flagged' ? '<span class="m-icon m-icon--red">warning</span>' : todayReport.status === 'submitted' ? '<span class="m-icon m-icon--brass">send</span>' : '<span class="m-icon m-icon--dim">edit_note</span>'}</div>
+           <div class="info">
+             <h3>Laporan Hari Ini ${todayReport.status === 'draft' ? '(Draf)' : 'Telah Direkodkan'}${todayReport.isSubstitution ? ' <span class="sub-tag">bagi pihak ' + escapeHTML(todayReport.dutyWardenName) + '</span>' : ''}</h3>
+             <p>${countRatedSections(todayReport)}/11 bahagian · Masa: ${todayReport.inspectionTime || '—'}
+               · <span class="stamp ${statusStampClass(todayReport.status)}" style="transform:none;font-size:.62rem;">${statusLabel(todayReport.status)}</span>
+             </p>
+           </div>
+           <div>
+             ${todayReport.status === 'draft'
+               ? `<button type="button" class="btn btn-brass btn-sm" onclick="goWardenTab('today');state.showingForm=true;renderWarden();">Sunting</button>`
+               : `<button type="button" class="btn btn-ghost btn-sm" onclick="goWardenTab('today')">Lihat</button>`
+             }
+           </div>`
+        : `<div style="font-size:2.6rem;line-height:1;"><span class="m-icon m-icon--dim">radio_button_unchecked</span></div>
+           <div class="info">
+             <h3>Belum ada laporan hari ini${!isScheduledToday ? '' : ' — Anda bertugas'}</h3>
+             <p>Sila hantar laporan pemeriksaan harian anda.</p>
+           </div>
+           <div>
+             <button type="button" class="btn btn-brass btn-sm" onclick="goWardenTab('today');state.showingForm=true;renderWarden();">Buat Laporan</button>
+           </div>`
+      }
+    </div>
+
+    ${pastDays.length > 0 ? `
+    <div class="panel" style="margin-bottom:1.2rem;">
+      <h3 style="margin-bottom:.8rem;font-size:1rem;">Rekap Minggu Ini</h3>
+      <div class="rekap-list">
+        ${pastDays.map(d => {
+          const ds = iso(d);
+          const reps = getReportsForDateHostel(ds);
+          const duty = getDutyWardenIds(d);
+          const dutyP = DB.wardens.find(x => x.id === duty.putera);
+          const dutyQ = DB.wardens.find(x => x.id === duty.puteri);
+          return `<div class="rekap-day">
+            <div class="rekap-day-head">${malayDay(d)}, ${d.getDate()} ${d.toLocaleDateString('en',{month:'short'})}</div>
+            <div class="rekap-row">
+              <span class="rekap-hostel">Asrama Putera</span>
+              <span class="rekap-duty">${dutyP ? dutyP.name : '—'} (Bertugas)</span>
+              <span class="rekap-status">${rekapIconHTML(reps.putera)}</span>
+            </div>
+            <div class="rekap-row">
+              <span class="rekap-hostel">Asrama Puteri</span>
+              <span class="rekap-duty">${dutyQ ? dutyQ.name : '—'} (Bertugas)</span>
+              <span class="rekap-status">${rekapIconHTML(reps.puteri)}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="panel">
+      <h3 style="margin-bottom:.9rem;font-size:1rem;">Kemajuan Minggu Ini</h3>
+      <div class="week-progress">
+        ${weekDays.map(d => {
+          const ds = iso(d);
+          const r = allReports[ds];
+          const isToday = ds === todayDS;
+          const isFuture = d > TODAY;
+          let cls = 'pending';
+          let check = '<span class="m-icon m-icon--dim" style="font-size:.95rem;">radio_button_unchecked</span>';
+          if(r && r.status !== 'draft'){ cls = 'done'; check = '<span class="m-icon m-icon--green" style="font-size:.95rem;">check_circle</span>'; }
+          else if(isFuture){ cls = 'pending'; check = ''; }
+          else if(d < TODAY && !r){ cls = 'missed'; check = '<span class="m-icon m-icon--red" style="font-size:.95rem;">cancel</span>'; }
+          else if(r && r.status === 'draft'){ cls = 'pending'; check = '<span class="m-icon m-icon--brass" style="font-size:.95rem;">edit_note</span>'; }
+          if(isToday) cls += ' today';
+          return `<div class="day-box ${cls}">
+            <span class="day-name">${malayDay(d).slice(0,3)}</span>
+            <span class="day-num">${d.getDate()}</span>
+            <span class="day-check">${check}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* --- Laporan Hari Ini --- */
+function wardenTodayHTML(){
+  const w = getWarden(state.session.wardenId);
+  const ds = state.editingReportDate || iso(TODAY);
+  state.editingReportDate = null;
+  const existing = w.reports[ds];
+  const isToday = ds === iso(TODAY);
+
+  // Show form if user clicked "Buat Laporan Baru" or "Sunting" on draft
+  if(state.showingForm){
+    state.showingForm = false;
+    return wardenFormPageHTML(w, existing, ds);
+  }
+
+  if(!existing){
+    return wardenEmptyTodayHTML(w, ds, isToday);
+  }
+
+  return wardenRecordedTodayHTML(w, existing, ds);
+}
+
+function wardenEmptyTodayHTML(w, ds, isToday){
+  const dateLabel = isToday ? fmtLong(TODAY) : fmtLong(fromISO(ds));
+  return `
+    <div class="main-header">
+      <div><span class="eyebrow">${dateLabel}</span><h2>Laporan Hari Ini</h2></div>
+    </div>
+    <div class="panel today-empty">
+      <span class="m-icon m-icon--dim" style="font-size:3rem;margin-bottom:.7rem;opacity:.4;display:block;">description</span>
+      <h3 style="margin-bottom:.5rem;">Belum ada laporan untuk hari ini</h3>
+      <p style="color:var(--dim-text);margin-bottom:1.5rem;max-width:420px;margin-left:auto;margin-right:auto;">
+        Sila lengkapkan laporan pemeriksaan harian untuk ${isToday ? 'hari ini' : 'tarikh ini'}.
+      </p>
+      <button type="button" class="btn btn-brass btn-lg" onclick="startNewReport('${ds}')">Buat Laporan Baru</button>
+    </div>
+  `;
+}
+
+function wardenRecordedTodayHTML(w, r, ds){
+  const isDraft = r.status === 'draft';
+  const isToday = ds === iso(TODAY);
+  const dateLabel = isToday ? fmtLong(TODAY) : fmtLong(fromISO(ds));
+  return `
+    <div class="main-header">
+      <div><span class="eyebrow">${dateLabel}</span><h2>Laporan Hari Ini</h2></div>
+      <span class="stamp ${statusStampClass(r.status)}">${statusLabel(r.status)}</span>
+    </div>
+    <div class="panel today-recorded">
+      <span class="m-icon ${isDraft ? 'm-icon--dim' : 'm-icon--green'}" style="font-size:2rem;margin-bottom:.5rem;display:block;">${isDraft ? 'edit_note' : 'check_circle'}</span>
+      <h3>Laporan telah direkodkan</h3>
+      <div class="summary">
+        ${countRatedSections(r)}/11 bahagian dinilai
+        · Masa: ${r.inspectionTime || '—'}
+      </div>
+      ${approvalTrailHTML(r)}
+      <div style="margin-top:1.2rem;display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;">
+        ${isDraft
+          ? `<button type="button" class="btn btn-ghost" onclick="state.showingForm=true;renderWarden();">Sunting Draf</button>
+             <button type="button" class="btn btn-brass" onclick="submitTodayDraft('${ds}')">Hantar Laporan</button>`
+          : `<button type="button" class="btn btn-ghost" onclick="viewReportDetail('${ds}')">Lihat Laporan</button>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function startNewReport(dateStr){
+  state.showingForm = true;
+  state.editingReportDate = dateStr;
+  renderWarden();
+}
+
+function submitTodayDraft(dateStr){
+  const w = getWarden(state.session.wardenId);
+  const r = w.reports[dateStr];
+  if(r){
+    r.status = 'submitted';
+    r.submittedAt = new Date().toISOString();
+    showToast('Laporan dihantar.');
+    renderWarden();
+  }
+}
+
+function wardenFormPageHTML(warden, existing, dateStr){
+  const r = existing || makeReport(dateStr, 'draft', '', {});
+  const disabledAttr = existing && existing.status !== 'draft' ? ' disabled' : '';
+  const readonlyAttr = existing && existing.status !== 'draft' ? ' readonly' : '';
+  const editable = !existing || existing.status === 'draft';
+
+  // Substitution check
+  const duty = getDutyWardenIds(fromISO(dateStr));
+  const hostelKey = warden.hostel === 'Asrama Putera' ? 'putera' : 'puteri';
+  const scheduledWardenId = duty[hostelKey];
+  const isSub = scheduledWardenId && scheduledWardenId !== warden.id;
+  const scheduledW = isSub ? DB.wardens.find(w => w.id === scheduledWardenId) : null;
+
+  return `
+    <div class="main-header">
+      <div><span class="eyebrow">${fmtLong(fromISO(dateStr))}</span><h2>Laporan Baru</h2></div>
+      ${existing ? `<span class="stamp ${statusStampClass(existing.status)}">${statusLabel(existing.status)}</span>` : ''}
+    </div>
+
+    ${isSub && editable ? `
+    <div class="notice-banner">
+      <span class="m-icon m-icon--brass" style="font-size:1.2rem;">info</span>
+      <span>Anda melaporkan <strong>bagi pihak ${scheduledW ? escapeHTML(scheduledW.name) : ''}</strong>. Beliau dijadualkan bertugas hari ini.</span>
+    </div>` : ''}
+
+    ${editable ? `
+    <div class="form-actions-top">
+      <button type="button" class="btn btn-ghost" onclick="saveReport('${dateStr}','draft')">Simpan sebagai Draf</button>
+      <button type="button" class="btn btn-brass" onclick="saveReport('${dateStr}','submitted')">Hantar Laporan</button>
+    </div>` : ''}
+
+    <div class="panel">
+      <div class="header-grid">
+        <div class="field"><label>Tarikh</label><div class="static-value">${dateStr}</div></div>
+        <div class="field"><label>Hari</label><div class="static-value">${malayDay(fromISO(dateStr))}</div></div>
+        <div class="field"><label>Warden</label><div class="static-value">${warden.name}</div></div>
+        <div class="field"><label>Asrama</label><div class="static-value">${warden.hostel}</div></div>
+        <div class="field"><label>Masa Pemeriksaan</label><input type="time" id="f-inspectionTime" value="${r.inspectionTime || ''}"${disabledAttr}></div>
+      </div>
+
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="chevron open">&#9654;</span>
+        <h4 style="color:var(--brass-deep);font-size:.82rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;">Bahagian 1–7: Penilaian Rating</h4>
+      </div>
+      <div class="section-body open">
+        <div class="section-inner">
+          ${SECTIONS_CONFIG.map((cfg, i) => {
+            const isOpen = i === 0;
+            const data = r[cfg.id] || {};
+            return sectionAccordionHTML(cfg, data, i, isOpen);
+          }).join('')}
+        </div>
+      </div>
+
+      <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--paper-line);">
+        <div class="section-header" onclick="toggleSection(this)">
+          <span class="chevron open">&#9654;</span>
+          <h4 style="color:var(--brass-deep);font-size:.82rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;">Bahagian 8–11: Teks &amp; Keselamatan</h4>
+        </div>
+        <div class="section-body open">
+          <div class="section-inner">
+            <div class="text-section" style="margin-bottom:1rem;">
+              <label style="display:block;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim-text);margin-bottom:.4rem;">8. Aduan Kerosakan</label>
+              <p style="font-size:.78rem;color:var(--dim-text);margin:0 0 .4rem;">Rekodkan sebarang isu penyelenggaraan. Jika tiada, tulis <strong>TKD</strong> (Tiada Kerosakan Dilaporkan).</p>
+              <textarea id="f-aduanKerosakan" placeholder="Contoh: Kipas rosak 3 unit - Bilik 2.1"${readonlyAttr}>${escapeHTML(r.aduanKerosakan)}</textarea>
+            </div>
+            <div class="text-section" style="margin-bottom:1rem;">
+              <label style="display:block;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim-text);margin-bottom:.4rem;">9. Murid Sakit / Balik Luar Jadual</label>
+              <p style="font-size:.78rem;color:var(--dim-text);margin:0 0 .4rem;">Rekodkan murid yang sakit atau tiada. Jika tiada, tulis <strong>TLB</strong> (Tiada Laporan Berkaitan).</p>
+              <textarea id="f-muridSakit" placeholder="Contoh: Abu Bin Ali (4N) - Demam Kepialu"${readonlyAttr}>${escapeHTML(r.muridSakit)}</textarea>
+            </div>
+            <div style="margin-bottom:1rem;">
+              <label style="display:block;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim-text);margin-bottom:.4rem;">10. Kawalan Keselamatan</label>
+              <p style="font-size:.78rem;color:var(--dim-text);margin:0 0 .5rem;">Nilai tahap keselamatan keseluruhan.</p>
+              <div class="security-group">
+                ${[1,2,3,4,5].map(n => {
+                  const checked = r.kawalanKeselamatan === String(n);
+                  const desc = n === 1 ? 'Lemah' : n === 5 ? 'Cemerlang' : '';
+                  return `<label${disabledAttr ? ' style="opacity:.7"' : ''}>
+                    <input type="radio" name="f-kawalanKeselamatan" value="${n}" ${checked ? 'checked' : ''} onchange="onSecurityChange(this)"${disabledAttr}>
+                    <span class="sec-label"><span class="num">${n}</span>${desc ? '<span class="desc">'+desc+'</span>' : ''}</span>
+                  </label>`;
+                }).join('')}
+              </div>
+            </div>
+            <div class="text-section">
+              <label style="display:block;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim-text);margin-bottom:.4rem;">11. Catatan Tambahan</label>
+              <textarea id="f-catatanTambahan" placeholder="Sebarang catatan tambahan..."${readonlyAttr}>${escapeHTML(r.catatanTambahan)}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${editable ? `
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" onclick="saveReport('${dateStr}','draft')">Simpan sebagai Draf</button>
+      <button type="button" class="btn btn-brass" onclick="saveReport('${dateStr}','submitted')">Hantar Laporan</button>
+    </div>` : ''}
+  `;
+}
+
+function onSecurityChange(radio){
+  document.querySelectorAll('.security-group label').forEach(l => l.classList.remove('selected'));
+  if(radio) radio.closest('label').classList.add('selected');
+}
+
+function collectFormData(dateStr, status){
+  const w = getWarden(state.session.wardenId);
+  const prior = w.reports[dateStr];
+  const sections = {};
+  SECTIONS_CONFIG.forEach(cfg => {
+    sections[cfg.id] = {};
+    cfg.items.forEach(item => {
+      const sel = document.querySelector(`select[name="r_${cfg.id}_${item.key}"]`);
+      sections[cfg.id][item.key] = sel ? sel.value : '';
+    });
+  });
+  const inspectionTime = document.getElementById('f-inspectionTime')?.value || prior?.inspectionTime || '';
+  const aduanKerosakan = document.getElementById('f-aduanKerosakan')?.value || 'TKD';
+  const muridSakit = document.getElementById('f-muridSakit')?.value || 'TLB';
+  const secRadio = document.querySelector('input[name="f-kawalanKeselamatan"]:checked');
+  const kawalanKeselamatan = secRadio ? secRadio.value : (prior?.kawalanKeselamatan || '');
+  const catatanTambahan = document.getElementById('f-catatanTambahan')?.value || '';
+
+  const now = new Date().toISOString();
+  const prevStatus = prior?.status || 'draft';
+  const isNewSubmission = status === 'submitted' && prevStatus !== 'submitted' && prevStatus !== 'reviewed';
+
+  // Submission tracking
+  const duty = getDutyWardenIds(fromISO(dateStr));
+  const hostelKey = w.hostel === 'Asrama Putera' ? 'putera' : 'puteri';
+  const dutyWId = duty[hostelKey];
+  const dutyW = dutyWId ? DB.wardens.find(x => x.id === dutyWId) : null;
+
+  return {
+    date: dateStr,
+    status: status || prevStatus,
+    adminNote: prior?.adminNote || '',
+    submittedAt: isNewSubmission ? now : (prior?.submittedAt || null),
+    reviewedBy: prior?.reviewedBy || null,
+    reviewedAt: prior?.reviewedAt || null,
+    flaggedBy: prior?.flaggedBy || null,
+    flaggedAt: prior?.flaggedAt || null,
+    submittedBy: prior?.submittedBy || w.id,
+    submittedByName: prior?.submittedByName || w.name,
+    dutyWardenId: dutyWId || prior?.dutyWardenId || null,
+    dutyWardenName: dutyW ? dutyW.name : (prior?.dutyWardenName || null),
+    isSubstitution: !!(dutyWId && dutyWId !== w.id),
+    inspectionTime,
+    ...sections,
+    aduanKerosakan,
+    muridSakit,
+    kawalanKeselamatan,
+    catatanTambahan,
+  };
+}
+
+function saveReport(dateStr, status){
+  const w = getWarden(state.session.wardenId);
+  const data = collectFormData(dateStr, status);
+  w.reports[dateStr] = data;
+  state.showingForm = false;
+  showToast(status === 'draft' ? 'Draf disimpan.' : 'Laporan dihantar.');
+  renderWarden();
+}
+
+/* --- warden history --- */
+function wardenHistoryHTML(){
+  const w = getWarden(state.session.wardenId);
+  const weekStart = fromISO(state.selectedWeekStart);
+  const weekEnd = addDays(weekStart, 6);
+  const isCurrentWeek = state.selectedWeekStart === iso(mondayOf(TODAY));
+  const days = Array.from({length:7}, (_,i)=>addDays(weekStart, i));
+  const allReports = getAllReportsForWarden(state.session.wardenId);
+
+  return `
+    <div class="main-header">
+      <div><span class="eyebrow">Entri anda</span><h2>Sejarah Laporan</h2></div>
+    </div>
+    <div class="week-flip">
+      <button type="button" onclick="shiftWeek(-1); renderWarden();" aria-label="Minggu sebelumnya">‹</button>
+      <span>Minggu ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}, ${weekEnd.getFullYear()}</span>
+      <button type="button" onclick="shiftWeek(1); renderWarden();" ${isCurrentWeek?'disabled':''} aria-label="Minggu seterusnya">›</button>
+      ${!isCurrentWeek ? `<button type="button" class="this-week-btn" onclick="jumpThisWeek(); renderWarden();">Minggu Ini</button>` : ''}
+    </div>
+    <div class="panel">
+      ${days.map(d=>{
+        const ds = iso(d);
+        const r = allReports[ds];
+        const isFuture = d > TODAY;
+        if(!r){
+          return `<div class="day-row empty">
+            <div class="date-block"><div class="d">${d.getDate()}</div><div class="m">${malayDay(d)}</div></div>
+            <div class="content"><div class="snip">${isFuture ? 'Belum sampai masa' : 'Tiada laporan'}</div></div>
+            ${!isFuture ? `<div class="actions"><button type="button" class="btn btn-ghost btn-sm" onclick="editReport('${ds}')">Tambah Entri</button></div>` : ''}
+          </div>`;
+        }
+        const ratedCount = countRatedSections(r);
+        const subInfo = r.isSubstitution ? ` · <span class="sub-tag">bagi pihak ${escapeHTML(r.dutyWardenName || '')}</span>` : '';
+        return `<div class="day-row">
+          <div class="date-block"><div class="d">${d.getDate()}</div><div class="m">${malayDay(d)}</div></div>
+          <div class="content">
+            <div class="snip">${ratedCount}/11 bahagian dinilai · Masa: ${r.inspectionTime || '—'}${subInfo}</div>
+            <div class="meta">${r.aduanKerosakan === 'TKD' ? 'TKD' : 'Ada kerosakan'} · ${r.muridSakit === 'TLB' ? 'TLB' : 'Ada laporan sakit'}</div>
+          </div>
+          <span class="stamp ${statusStampClass(r.status)}">${statusLabel(r.status)}</span>
+          <div class="actions">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="viewReportDetail('${ds}')">${r.status === 'draft' ? 'Sunting' : 'Lihat'}</button>
+          </div>
+        </div>`;
+      }).join('') || '<div class="empty-state"><h3>Tiada laporan</h3><p>Pilih warden untuk melihat laporan.</p></div>'}
+    </div>
+  `;
+}
+
+function countRatedSections(report){
+  let count = 0;
+  ALL_SECTION_IDS.forEach(sid => {
+    const sec = report[sid];
+    if(sec && Object.values(sec).some(v => v !== '' && v != null)) count++;
+  });
+  if(report.aduanKerosakan && report.aduanKerosakan.trim()) count++;
+  if(report.muridSakit && report.muridSakit.trim()) count++;
+  if(report.kawalanKeselamatan && report.kawalanKeselamatan.trim()) count++;
+  if(report.catatanTambahan && report.catatanTambahan.trim()) count++;
+  return Math.min(count, 11);
+}
+
+function viewReportDetail(dateStr){
+  const w = getWarden(state.session.wardenId);
+  const r = w.reports[dateStr];
+  if(!r) return;
+  const d = fromISO(dateStr);
+  const isDraft = r.status === 'draft';
+
+  openModal(`
+    <div class="modal-head">
+      <h3>${fmtLong(d)}</h3>
+      <button type="button" class="modal-close" onclick="closeModal()" aria-label="Tutup">&times;</button>
+    </div>
+    <p style="margin:-.6rem 0 .5rem;font-size:.82rem;color:var(--dim-text);">${w.name} · ${w.hostel} · Masa: ${r.inspectionTime || '—'}</p>
+    <span class="stamp ${statusStampClass(r.status)}" style="display:inline-block;margin-bottom:.8rem;">${statusLabel(r.status)}</span>
+    ${approvalTrailHTML(r)}
+
+    <div style="margin-top:.8rem;">
+      ${SECTIONS_CONFIG.map((cfg, i) => {
+        const data = r[cfg.id] || {};
+        return sectionAccordionReadOnlyHTML(cfg, data);
+      }).join('')}
+    </div>
+
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--paper-line);">
+      <div style="margin-bottom:.8rem;">
+        <strong style="font-size:.82rem;">8. Aduan Kerosakan</strong>
+        <p style="font-size:.86rem;white-space:pre-wrap;margin:.3rem 0;">${escapeHTML(r.aduanKerosakan)}</p>
+      </div>
+      <div style="margin-bottom:.8rem;">
+        <strong style="font-size:.82rem;">9. Murid Sakit / Balik Luar Jadual</strong>
+        <p style="font-size:.86rem;white-space:pre-wrap;margin:.3rem 0;">${escapeHTML(r.muridSakit)}</p>
+      </div>
+      <div style="margin-bottom:.8rem;">
+        <strong style="font-size:.82rem;">10. Kawalan Keselamatan</strong>
+        <p style="font-size:.86rem;margin:.3rem 0;">${r.kawalanKeselamatan ? r.kawalanKeselamatan + ' / 5' : '—'}</p>
+      </div>
+      <div>
+        <strong style="font-size:.82rem;">11. Catatan Tambahan</strong>
+        <p style="font-size:.86rem;white-space:pre-wrap;margin:.3rem 0;">${escapeHTML(r.catatanTambahan || '—')}</p>
+      </div>
+    </div>
+
+    ${isDraft ? `
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" onclick="editDraftFromModal('${dateStr}')">Sunting Draf</button>
+    </div>` : ''}
+  `, true);
+}
+
+function editDraftFromModal(dateStr){
+  closeModal();
+  state.wardenTab = 'today';
+  state.editingReportDate = dateStr;
+  state.showingForm = true;
+  renderWarden();
+}
+
+function editReport(dateStr){
+  state.wardenTab = 'today';
+  state.editingReportDate = dateStr;
+  renderWarden();
+}
+
+/* ---------- week nav helpers ---------- */
+function shiftWeek(dir){
+  state.selectedWeekStart = iso(addDays(fromISO(state.selectedWeekStart), dir*7));
+}
+function jumpThisWeek(){
+  state.selectedWeekStart = iso(mondayOf(TODAY));
+}
+
+/* =================================================================
+   ADMIN VIEWS
+   ================================================================= */
+function renderAdmin(){
+  renderNavTabs();
+  const main = document.getElementById('main-content');
+  if(state.adminTab === 'overview') main.innerHTML = adminOverviewHTML();
+  else if(state.adminTab === 'wardens') main.innerHTML = adminWardensHTML();
+  else if(state.adminTab === 'jadual') main.innerHTML = adminScheduleHTML();
+  else if(state.adminTab === 'reports'){
+    if(!state.selectedWardenId) state.selectedWardenId = DB.wardens.find(w=>w.status==='active')?.id || null;
+    main.innerHTML = adminReportsHTML();
+  }
+}
+
+/* --- admin schedule / roster --- */
+function adminScheduleHTML(){
+  const w = getWarden(state.selectedWardenId);
+  const weekStart = fromISO(state.selectedWeekStart);
+  const weekEnd = addDays(weekStart, 6);
+  const isCurrentWeek = state.selectedWeekStart === iso(mondayOf(TODAY));
+  const days = Array.from({length:7}, (_,i)=>addDays(weekStart, i));
+  const puteraWardens = DB.wardens.filter(w => w.status === 'active' && w.hostel === 'Asrama Putera');
+  const puteriWardens = DB.wardens.filter(w => w.status === 'active' && w.hostel === 'Asrama Puteri');
+
+  return `
+    <div class="main-header">
+      <div><span class="eyebrow">Pengurusan</span><h2>Jadual Warden</h2></div>
+    </div>
+    <div class="week-flip">
+      <button type="button" onclick="shiftWeek(-1); renderAdmin();" aria-label="Minggu sebelumnya">‹</button>
+      <span>Minggu ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}, ${weekEnd.getFullYear()}</span>
+      <button type="button" onclick="shiftWeek(1); renderAdmin();" aria-label="Minggu seterusnya">›</button>
+      ${!isCurrentWeek ? `<button type="button" class="this-week-btn" onclick="jumpThisWeek(); renderAdmin();">Minggu Ini</button>` : ''}
+    </div>
+    <div class="panel">
+      <table class="roster schedule-table">
+        <thead>
+          <tr><th style="width:90px;">Hari</th><th style="width:90px;">Tarikh</th><th>Asrama Putera</th><th>Asrama Puteri</th></tr>
+        </thead>
+        <tbody>
+          ${days.map(d => {
+            const ds = iso(d);
+            const duty = getDutyWardenIds(d);
+            return `<tr>
+              <td><strong>${malayDay(d)}</strong></td>
+              <td class="badge-id">${fmtShort(d)}</td>
+              <td><select class="sched-sel" id="sched-putera-${ds}">
+                ${puteraWardens.map(w => `<option value="${w.id}" ${duty.putera === w.id ? 'selected' : ''}>${w.name}</option>`).join('')}
+              </select></td>
+              <td><select class="sched-sel" id="sched-puteri-${ds}">
+                ${puteriWardens.map(w => `<option value="${w.id}" ${duty.puteri === w.id ? 'selected' : ''}>${w.name}</option>`).join('')}
+              </select></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      <div class="form-actions">
+        <button type="button" class="btn btn-brass" onclick="saveSchedule()">Simpan Jadual</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveSchedule(){
+  const weekStart = fromISO(state.selectedWeekStart);
+  for(let i = 0; i < 7; i++){
+    const d = addDays(weekStart, i);
+    const ds = iso(d);
+    const puteraSel = document.getElementById('sched-putera-' + ds);
+    const puteriSel = document.getElementById('sched-puteri-' + ds);
+    if(puteraSel && puteriSel){
+      DB.roster[ds] = { putera: puteraSel.value, puteri: puteriSel.value };
+    }
+  }
+  showToast('Jadual minggu ini disimpan.');
+  renderAdmin();
+}
+
+function adminOverviewHTML(){
+  const all = DB.wardens.flatMap(w => Object.values(w.reports).map(r=>({...r, wardenName:w.name, hostel:w.hostel, wardenEmail:w.email})));
+  const weekStart = fromISO(state.selectedWeekStart);
+  const thisWeekDates = Array.from({length:7}, (_,i)=>iso(addDays(mondayOf(TODAY), i)));
+  const pending = all.filter(r => thisWeekDates.includes(r.date) && r.status==='submitted').length;
+  const reviewed = all.filter(r => thisWeekDates.includes(r.date) && r.status==='reviewed').length;
+  const flagged = all.filter(r => r.status==='flagged').length;
+  const activeCount = DB.wardens.filter(w=>w.status==='active').length;
+
+  const recent = all
+    .filter(r=>r.status!=='draft')
+    .sort((a,b)=> b.date.localeCompare(a.date))
+    .slice(0,8);
+
+  return `
+    <div class="main-header">
+      <div><span class="eyebrow">Ringkasan Fasiliti</span><h2>Selamat petang, Pengarah Whitfield</h2></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="num">${activeCount}</div><div class="label">Warden Aktif</div></div>
+      <div class="stat-card accent"><div class="num">${pending}</div><div class="label">Belum Disemak — Minggu Ini</div></div>
+      <div class="stat-card good"><div class="num">${reviewed}</div><div class="label">Disemak — Minggu Ini</div></div>
+      <div class="stat-card warn"><div class="num">${flagged}</div><div class="label">Ditanda, Sepanjang Masa</div></div>
+    </div>
+    <div class="panel">
+      <h3 style="margin-bottom:.9rem;">Entri Terkini</h3>
+      <ul class="ledger">
+        ${recent.map(r=>`
+          <li>
+            <span class="who">${r.wardenName}</span>
+            <span class="meta">${fmtShort(fromISO(r.date))}</span>
+            <span class="snippet">${r.aduanKerosakan !== 'TKD' ? '<span class="m-icon m-icon--dim" style="font-size:.85rem;">build</span> Kerosakan' : r.muridSakit !== 'TLB' ? '<span class="m-icon m-icon--dim" style="font-size:.85rem;">local_hospital</span> Sakit' : '<span class="m-icon m-icon--green" style="font-size:.85rem;">check_circle</span>'} ${r.inspectionTime || '—'}</span>
+            <span class="stamp ${statusStampClass(r.status)}">${statusLabel(r.status)}</span>
+          </li>
+        `).join('') || '<li><span class="snippet" style="color:var(--dim-text)">Tiada entri.</span></li>'}
+      </ul>
+    </div>
+  `;
+}
+
+function adminWardensHTML(){
+  return `
+    <div class="main-header">
+      <div><span class="eyebrow">Senarai</span><h2>Warden</h2></div>
+      <button type="button" class="btn btn-brass" onclick="openAddWardenModal()">+ Tambah Warden</button>
+    </div>
+    <div class="panel">
+      <table class="roster">
+        <thead>
+          <tr><th>Nama</th><th>Emel</th><th>Asrama</th><th>Status</th><th>Laporan</th><th></th></tr>
+        </thead>
+        <tbody>
+          ${DB.wardens.map(w=>`
+            <tr>
+              <td><strong>${w.name}</strong></td>
+              <td class="badge-id">${w.email}</td>
+              <td>${w.hostel}</td>
+              <td><span class="stamp ${w.status==='active'?'stamp--active':'stamp--revoked'}">${w.status==='active'?'Aktif':'Ditarik'}</span></td>
+              <td>${Object.keys(w.reports).length}</td>
+              <td>
+                <div class="actions">
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="goToWardenReports('${w.id}')">Lihat Laporan</button>
+                  ${w.status==='active'
+                    ? `<button type="button" class="btn btn-danger btn-sm" onclick="confirmRevoke('${w.id}')">Tarik Akses</button>`
+                    : `<button type="button" class="btn btn-ghost btn-sm" onclick="reinstateWarden('${w.id}')">Aktifkan Semula</button>`}
+                </div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function goToWardenReports(id){
+  state.selectedWardenId = id;
+  state.adminTab = 'reports';
+  renderAdmin();
+}
+
+function openAddWardenModal(){
+  openModal(`
+    <div class="modal-head">
+      <h3>Tambah Warden</h3>
+      <button type="button" class="modal-close" onclick="closeModal()" aria-label="Tutup">&times;</button>
+    </div>
+    <div class="field">
+      <label for="nw-email">Emel</label>
+      <input id="nw-email" type="email" placeholder="cth. nama@example.com">
+    </div>
+    <div class="field">
+      <label for="nw-name">Nama</label>
+      <input id="nw-name" placeholder="Cth. Muhammad Ali Bin Ahmad">
+    </div>
+    <div class="field">
+      <label for="nw-hostel">Asrama</label>
+      <select id="nw-hostel">
+        <option value="Asrama Putera">Asrama Putera</option>
+        <option value="Asrama Puteri">Asrama Puteri</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button type="button" class="btn btn-brass" onclick="saveNewWarden()">Tambah ke Senarai</button>
+    </div>
+  `);
+}
+
+function saveNewWarden(){
+  const email = document.getElementById('nw-email').value.trim();
+  const name = document.getElementById('nw-name').value.trim();
+  const hostel = document.getElementById('nw-hostel').value;
+  if(!email || !name){ showToast('Emel dan nama diperlukan.'); return; }
+  DB.wardens.push({ id:'w'+Date.now(), name, email, hostel, status:'active', reports:{} });
+  closeModal();
+  showToast(name + ' ditambah ke senarai.');
+  renderAdmin();
+}
+
+function confirmRevoke(id){
+  const w = getWarden(id);
+  openModal(`
+    <div class="modal-head">
+      <h3>Tarik Akses ${w.name}?</h3>
+      <button type="button" class="modal-close" onclick="closeModal()" aria-label="Tutup">&times;</button>
+    </div>
+    <p style="font-size:.9rem; color:var(--ink-text); margin-bottom:1.2rem;">
+      Ini akan menarik akses ${w.name} (${w.email}). Laporan sedia ada kekal, tetapi mereka tidak lagi boleh log masuk atau menghantar laporan baharu.
+    </p>
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" onclick="closeModal()">Batal</button>
+      <button type="button" class="btn btn-danger" onclick="revokeWarden('${id}')">Tarik Akses</button>
+    </div>
+  `);
+}
+function revokeWarden(id){
+  const w = getWarden(id);
+  w.status = 'revoked';
+  closeModal();
+  showToast('Akses ' + w.name + ' telah ditarik.');
+  renderAdmin();
+}
+function reinstateWarden(id){
+  const w = getWarden(id);
+  w.status = 'active';
+  showToast(w.name + ' diaktifkan semula.');
+  renderAdmin();
+}
+
+/* --- admin reports --- */
+function adminReportsHTML(){
+  const w = getWarden(state.selectedWardenId);
+  const weekStart = fromISO(state.selectedWeekStart);
+  const weekEnd = addDays(weekStart, 6);
+  const isCurrentWeek = state.selectedWeekStart === iso(mondayOf(TODAY));
+  const days = Array.from({length:7}, (_,i)=>addDays(weekStart, i));
+
+  return `
+    <div class="main-header">
+      <div><span class="eyebrow">Semakan</span><h2>Laporan</h2></div>
+    </div>
+    <div class="reports-layout">
+      <div class="panel" style="padding:.8rem;">
+        <ul class="warden-picker">
+          ${DB.wardens.map(x=>`
+            <li><button type="button" class="${x.id===state.selectedWardenId?'active':''}" onclick="selectWarden('${x.id}')">
+              ${x.name}
+              <span class="sub">${x.email} · ${x.hostel} · ${x.status==='active'?'Aktif':'Ditarik'}</span>
+            </button></li>
+          `).join('')}
+        </ul>
+      </div>
+      <div>
+        <div class="week-flip">
+          <button type="button" onclick="shiftWeek(-1); renderAdmin();" aria-label="Minggu sebelumnya">‹</button>
+          <span>Minggu ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}, ${weekEnd.getFullYear()}</span>
+          <button type="button" onclick="shiftWeek(1); renderAdmin();" ${isCurrentWeek?'disabled':''} aria-label="Minggu seterusnya">›</button>
+          ${!isCurrentWeek ? `<button type="button" class="this-week-btn" onclick="jumpThisWeek(); renderAdmin();">Minggu Ini</button>` : ''}
+        </div>
+        <div class="panel">
+          ${w ? days.map(d=>{
+              const ds = iso(d);
+              const r = w.reports[ds];
+              const isFuture = d > TODAY;
+              if(!r){
+                return `<div class="day-row empty">
+                  <div class="date-block"><div class="d">${d.getDate()}</div><div class="m">${malayDay(d)}</div></div>
+                  <div class="content"><div class="snip">${isFuture ? 'Belum sampai masa' : 'Tiada laporan'}</div></div>
+                </div>`;
+              }
+              const rated = countRatedSections(r);
+              return `<div class="day-row clickable" onclick="toggleAdminDetail('${ds}')">
+                <span class="expand-icon" id="expand-icon-${ds}">&#9654;</span>
+                <div class="date-block"><div class="d">${d.getDate()}</div><div class="m">${malayDay(d)}</div></div>
+                <div class="content">
+                  <div class="snip">Masa: ${r.inspectionTime || '—'} · ${rated}/11 bahagian</div>
+                  <div class="meta">${r.aduanKerosakan === 'TKD' ? 'TKD' : '<span class="m-icon m-icon--dim" style="font-size:.72rem;">build</span> Ada kerosakan'} · ${r.muridSakit === 'TLB' ? 'TLB' : '<span class="m-icon m-icon--dim" style="font-size:.72rem;">local_hospital</span> Ada sakit'}</div>
+                </div>
+                <span class="stamp ${statusStampClass(r.status)}">${statusLabel(r.status)}</span>
+              </div>
+              <div class="report-inline" id="detail-${ds}">${adminReportDetailHTML(w.id, ds, r)}</div>`;
+            }).join('') : '<div class="empty-state"><h3>Tiada warden dipilih</h3><p>Pilih warden dari senarai untuk menyemak laporan harian.</p></div>'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function selectWarden(id){ state.selectedWardenId = id; renderAdmin(); }
+
+function toggleAdminDetail(dateStr){
+  const el = document.getElementById('detail-' + dateStr);
+  const icon = document.getElementById('expand-icon-' + dateStr);
+  if(!el) return;
+  el.classList.toggle('open');
+  if(icon) icon.classList.toggle('open');
+}
+
+function adminReportDetailHTML(wardenId, dateStr, r){
+  return `
+    <div class="detail-grid">
+      ${SECTIONS_CONFIG.map(cfg => {
+        const data = r[cfg.id] || {};
+        return `<div class="detail-section full">
+          <h5>${cfg.title}</h5>
+          ${ratingTableReadOnlyHTML(cfg, data)}
+        </div>`;
+      }).join('')}
+      <div class="detail-section full">
+        <h5>8. Aduan Kerosakan</h5>
+        <div class="txt">${escapeHTML(r.aduanKerosakan)}</div>
+      </div>
+      <div class="detail-section full">
+        <h5>9. Murid Sakit / Balik Luar Jadual</h5>
+        <div class="txt">${escapeHTML(r.muridSakit)}</div>
+      </div>
+      <div class="detail-section">
+        <h5>10. Kawalan Keselamatan</h5>
+        <div class="txt">${r.kawalanKeselamatan ? r.kawalanKeselamatan + ' / 5' : '—'}</div>
+      </div>
+      <div class="detail-section">
+        <h5>11. Catatan Tambahan</h5>
+        <div class="txt">${escapeHTML(r.catatanTambahan || '—')}</div>
+      </div>
+      <div class="detail-section full">
+        ${approvalTrailHTML(r)}
+      </div>
+      <div class="admin-note-area full" style="grid-column:1/-1;">
+        <label for="admin-note-${dateStr}">Nota Pengurusan</label>
+        <textarea id="admin-note-${dateStr}" style="min-height:60px;" placeholder="Tambah nota untuk rekod…">${escapeHTML(r.adminNote || '')}</textarea>
+        <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.6rem;">
+          <button type="button" class="btn btn-danger btn-sm" onclick="setReportStatus('${wardenId}','${dateStr}','flagged')">Tanda untuk Tindakan</button>
+          <button type="button" class="btn btn-brass btn-sm" onclick="setReportStatus('${wardenId}','${dateStr}','reviewed')">Tanda Disemak</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function setReportStatus(wardenId, dateStr, status){
+  const w = getWarden(wardenId);
+  const r = w.reports[dateStr];
+  if(!r) return;
+  r.status = status;
+  const noteEl = document.getElementById('admin-note-' + dateStr);
+  if(noteEl) r.adminNote = noteEl.value;
+  if(status === 'reviewed'){
+    r.reviewedBy = 'C. Whitfield';
+    r.reviewedAt = new Date().toISOString();
+  } else if(status === 'flagged'){
+    r.flaggedBy = 'C. Whitfield';
+    r.flaggedAt = new Date().toISOString();
+  }
+  showToast(status === 'reviewed' ? 'Laporan ditanda sebagai disemak.' : 'Laporan ditanda untuk tindakan.');
+  renderAdmin();
+}
+
+/* =================================================================
+   NAVIGATION
+   ================================================================= */
+function renderNavTabs(){
+  const nav = document.getElementById('nav-tabs');
+  if(state.session.role === 'admin'){
+    document.getElementById('sidebar-mode').textContent = 'Pengurusan';
+    document.getElementById('sidebar-who').textContent = 'C. Whitfield';
+    document.getElementById('sidebar-role').textContent = 'Pengarah Fasiliti';
+    nav.innerHTML = [
+      ['overview','Ringkasan'],
+      ['wardens','Warden'],
+      ['jadual','Jadual'],
+      ['reports','Laporan'],
+    ].map(([key,label])=>`
+      <li><button type="button" class="nav-tab ${state.adminTab===key?'active':''}" onclick="goAdminTab('${key}')">
+        <span class="dot"></span>${label}
+      </button></li>`).join('');
+  } else {
+    const w = getWarden(state.session.wardenId);
+    document.getElementById('sidebar-mode').textContent = 'Warden';
+    document.getElementById('sidebar-who').textContent = w ? w.name : '—';
+    document.getElementById('sidebar-role').textContent = w ? (w.hostel) : '—';
+    nav.innerHTML = [
+      ['dashboard','Dashboard'],
+      ['today','Buat Laporan'],
+      ['history','Sejarah Laporan'],
+    ].map(([key,label])=>`
+      <li><button type="button" class="nav-tab ${state.wardenTab===key?'active':''}" onclick="goWardenTab('${key}')">
+        <span class="dot"></span>${label}
+      </button></li>`).join('');
+  }
+}
+
+function goAdminTab(tab){ state.adminTab = tab; renderAdmin(); }
+function goWardenTab(tab){
+  state.wardenTab = tab;
+  if(tab !== 'today') state.showingForm = false;
+  renderWarden();
+}
+
+/* ---------- init ---------- */
+populateLoginWardens();
+</script>
+</body>
+</html>

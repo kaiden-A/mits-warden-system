@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n server,client -c cyan,magenta \"cd server && uvicorn app.main:app --reload\" \"cd client && next dev\""
+    "dev": "concurrently -n server,client -c cyan,magenta \"cd server && .venv\\Scripts\\uvicorn app.main:app --reload\" \"cd client && npm run dev\""
   },
   "devDependencies": {
     "concurrently": "^9"

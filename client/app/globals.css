@@ -1,26 +1,36 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: #1E2430;
+  --color-ink-soft: #2B3244;
+  --color-ink-line: #3A4258;
+  --color-paper: #F6F2E8;
+  --color-paper-raised: #FBF9F3;
+  --color-paper-line: #E2DAC4;
+  --color-brass: #A7802E;
+  --color-brass-deep: #7C5E1F;
+  --color-brass-wash: #EFE3C4;
+  --color-red: #A23E30;
+  --color-red-wash: #F3DFDA;
+  --color-green: #43604B;
+  --color-green-wash: #DEE7DD;
+  --color-ink-text: #2A2620;
+  --color-dim-text: #7A7261;
+
+  --font-heading: var(--font-fraunces);
+  --font-body: var(--font-ibm-plex-sans);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-family: var(--font-body), sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:focus-visible {
+  outline: 2px solid var(--color-brass);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
 }
