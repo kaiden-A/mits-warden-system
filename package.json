@@ -1,0 +1,11 @@
+{
+  "name": "mits-warden-system",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n server,client -c cyan,magenta \"cd server && uvicorn app.main:app --reload\" \"cd client && next dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^9"
+  }
+}

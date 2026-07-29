@@ -1,0 +1,2 @@
+INFO:     127.0.0.1:60104 - "GET /api/reports?page=1&per_page=20 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54959 - "POST /api/auth/login HTTP/1.1" 500 Internal Server Error

@@ -1,0 +1,25 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "Log Tugas - Warden Duty Report System"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+    "pydantic[email-validator]>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "pyjwt>=2.10.0",
+    "bcrypt>=4.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
