@@ -103,7 +103,9 @@ export function statusColor(status: string) {
 export const HOSTELS = ['Asrama Putera', 'Asrama Puteri'] as const;
 
 export function iso(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
 }
 
 export function addDays(d: Date, n: number): Date {

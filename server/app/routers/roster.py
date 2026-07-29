@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,9 +18,9 @@ async def get_roster(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    from datetime import timedelta
+    from app.utils.timezone import today_malaysia
 
-    today = date.today()
+    today = today_malaysia()
     if not week_start:
         week_start = today - timedelta(days=today.weekday())
 

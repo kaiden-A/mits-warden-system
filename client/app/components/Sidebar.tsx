@@ -37,14 +37,15 @@ export default function Sidebar({ mode, navItems }: { mode: string; navItems: Na
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-56 flex-shrink-0 bg-ink text-paper flex-col py-5 pb-4">
-        <div className="flex items-center gap-2 px-5 pb-5 border-b border-ink-line mb-3">
+      <aside className="hidden md:flex w-56 flex-shrink-0 bg-ink text-paper flex-col py-5 pb-0">
+        <div className="flex items-center gap-2 px-5 pb-4 border-b border-ink-line mb-3">
           <div className="w-8 h-8 border-2 border-brass rounded-full flex items-center justify-center font-heading font-black text-sm text-brass flex-shrink-0">
             LT
           </div>
           <div>
             <h1 className="font-heading text-base text-paper font-bold leading-tight">Log Tugas</h1>
-            <p className="text-[0.62rem] text-[#8B93A8] uppercase tracking-wider font-mono">{mode}</p>
+            <p className="text-[0.6rem] text-[#8B93A8] uppercase tracking-wider font-mono">{mode}</p>
+            <p className="text-[0.55rem] text-brass font-mono uppercase tracking-wider mt-px font-semibold">MITS Klang</p>
           </div>
         </div>
 
@@ -66,7 +67,7 @@ export default function Sidebar({ mode, navItems }: { mode: string; navItems: Na
           })}
         </nav>
 
-        <div className="pt-3 px-5 border-t border-ink-line mt-auto">
+        <div className="pt-3 px-5 border-t border-ink-line">
           <p className="text-[0.82rem] text-paper font-semibold truncate">{user?.name || '—'}</p>
           <p className="text-[0.68rem] text-[#8B93A8] uppercase tracking-wider font-mono mt-0.5 mb-2.5">
             {user?.hostel || (user?.role === 'admin' ? 'Pengarah Fasiliti' : '—')}
@@ -75,6 +76,9 @@ export default function Sidebar({ mode, navItems }: { mode: string; navItems: Na
             className="w-full py-2 border border-ink-line text-[#C7CCDA] rounded text-xs transition-colors hover:bg-ink-soft">
             Log Keluar
           </button>
+          <p className="text-[0.5rem] text-[#5A6275] font-mono text-center py-3 mt-1 border-t border-ink-line">
+            Powered by Motion-U · Developed &amp; maintained by Kaiden-A
+          </p>
         </div>
       </aside>
 
@@ -84,7 +88,10 @@ export default function Sidebar({ mode, navItems }: { mode: string; navItems: Na
           <div className="w-7 h-7 border-2 border-brass rounded-full flex items-center justify-center font-heading font-black text-[10px] text-brass flex-shrink-0">
             LT
           </div>
-          <span className="font-heading font-bold text-sm">Log Tugas</span>
+          <div>
+            <span className="font-heading font-bold text-sm">Log Tugas</span>
+            <span className="text-[0.5rem] text-brass font-mono uppercase tracking-wider ml-1.5 font-semibold">MITS Klang</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[0.65rem] text-[#8B93A8] font-mono truncate max-w-[120px]">{userLabel}</span>
@@ -131,11 +138,15 @@ export default function Sidebar({ mode, navItems }: { mode: string; navItems: Na
               </div>
             </div>
             <div className="border-t border-ink-line pt-4 space-y-2">
+              <p className="text-[0.65rem] text-brass font-mono uppercase tracking-wider font-semibold">Maahad Integrasi Tahfiz Klang (MITS)</p>
               <p className="text-[0.72rem] text-[#8B93A8] font-mono">{user?.email || ''}</p>
               <button type="button" onClick={handleSignOut}
                 className="w-full py-3 border border-ink-line text-[#C7CCDA] rounded-lg text-sm font-semibold transition-colors hover:bg-ink-soft">
                 Log Keluar
               </button>
+              <p className="text-[0.5rem] text-[#5A6275] font-mono text-center pt-2">
+                Powered by Motion-U · Developed &amp; maintained by Kaiden-A
+              </p>
             </div>
           </div>
         </div>

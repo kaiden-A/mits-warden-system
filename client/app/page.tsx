@@ -17,7 +17,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-ink">
-      <div className="text-paper font-heading text-xl animate-pulse">Log Tugas</div>
+      <div className="text-center">
+        <div className="text-paper font-heading text-xl animate-pulse">Log Tugas</div>
+        <p className="text-[#8B93A8] text-xs font-mono mt-2">Maahad Integrasi Tahfiz Klang (MITS)</p>
+      </div>
     </div>
   );
 }

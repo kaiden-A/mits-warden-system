@@ -38,6 +38,7 @@ export default function LoginPage() {
           </div>
           <h1 className="font-heading text-2xl font-bold tracking-tight text-ink-text">Log Tugas</h1>
           <p className="text-xs text-dim-text font-mono uppercase tracking-wider mt-0.5">Laporan Harian &amp; Semakan</p>
+          <p className="text-[0.62rem] text-brass-deep font-mono uppercase tracking-wider mt-1.5 font-semibold">Maahad Integrasi Tahfiz Klang (MITS)</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -64,6 +65,10 @@ export default function LoginPage() {
             {loading ? 'Memproses…' : 'Daftar Masuk'}
           </button>
         </form>
+
+        <p className="text-[0.58rem] text-dim-text font-mono text-center mt-5 pt-4 border-t border-paper-line">
+          Powered by Motion-U · Developed &amp; maintained by Kaiden-A
+        </p>
       </div>
     </div>
   );

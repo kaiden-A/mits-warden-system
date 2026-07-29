@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/app/hooks/useAuth';
 import { apiGet } from '@/app/lib/api';
 import { fmtShort, fromISO, statusLabel, statusColor } from '@/app/lib/constants';
 import Stamp from '@/app/components/Stamp';
@@ -23,10 +24,21 @@ interface AdminDashboard {
   }[];
 }
 
+const GREETINGS = ['Selamat pagi', 'Selamat petang', 'Selamat malam'];
+
+function timeGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return GREETINGS[0];
+  if (h < 18) return GREETINGS[1];
+  return GREETINGS[2];
+}
+
 export default function AdminOverviewPage() {
+  const { user } = useAuth();
   const { showToast } = useToast();
   const [data, setData] = useState<AdminDashboard | null>(null);
   const [loading, setLoading] = useState(true);
+  const greeting = useMemo(timeGreeting, []);
 
   useEffect(() => {
     apiGet('/api/dashboard', { admin: '1' })
@@ -47,8 +59,8 @@ export default function AdminOverviewPage() {
     <div>
       <div className="flex items-baseline justify-between flex-wrap gap-3 mb-6">
         <div>
-          <span className="block font-mono text-[0.72rem] uppercase tracking-wider text-dim-text mb-1">Ringkasan Fasiliti</span>
-          <h2 className="font-heading text-2xl font-bold text-ink-text">Selamat petang, Pengarah Whitfield</h2>
+          <span className="block font-mono text-[0.72rem] uppercase tracking-wider text-dim-text mb-1">Ringkasan MITS Klang</span>
+          <h2 className="font-heading text-2xl font-bold text-ink-text">{greeting}, {user?.name || 'Pengarah'}</h2>
         </div>
       </div>
 

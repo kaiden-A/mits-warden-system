@@ -1,3 +1,30 @@
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshToken(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch('/api/auth/refresh', { method: 'POST' });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+async function handleResponse(res: Response) {
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Request failed' }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function apiGet(path: string, searchParams?: Record<string, string>) {
   const url = new URL(path, window.location.origin);
   if (searchParams) {
@@ -5,49 +32,52 @@ export async function apiGet(path: string, searchParams?: Record<string, string>
       if (v) url.searchParams.set(k, v);
     });
   }
-  const res = await fetch(url.toString());
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: 'Request failed' }));
-    throw new Error(err.detail || `HTTP ${res.status}`);
+  let res = await fetch(url.toString());
+  if (res.status === 401) {
+    const refreshed = await refreshToken();
+    if (refreshed) res = await fetch(url.toString());
   }
-  return res.json();
+  return handleResponse(res);
 }
 
 export async function apiPost(path: string, body?: unknown) {
-  const res = await fetch(path, {
+  const opts: RequestInit = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: 'Request failed' }));
-    throw new Error(err.detail || `HTTP ${res.status}`);
+  };
+  let res = await fetch(path, opts);
+  if (res.status === 401) {
+    const refreshed = await refreshToken();
+    if (refreshed) res = await fetch(path, opts);
   }
-  return res.json();
+  return handleResponse(res);
 }
 
 export async function apiPatch(path: string, body?: unknown) {
-  const res = await fetch(path, {
+  const opts: RequestInit = {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: 'Request failed' }));
-    throw new Error(err.detail || `HTTP ${res.status}`);
+  };
+  let res = await fetch(path, opts);
+  if (res.status === 401) {
+    const refreshed = await refreshToken();
+    if (refreshed) res = await fetch(path, opts);
   }
-  return res.json();
+  return handleResponse(res);
 }
 
 export async function apiPut(path: string, body?: unknown) {
-  const res = await fetch(path, {
+  const opts: RequestInit = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: 'Request failed' }));
-    throw new Error(err.detail || `HTTP ${res.status}`);
+  };
+  let res = await fetch(path, opts);
+  if (res.status === 401) {
+    const refreshed = await refreshToken();
+    if (refreshed) res = await fetch(path, opts);
   }
-  return res.json();
+  return handleResponse(res);
 }

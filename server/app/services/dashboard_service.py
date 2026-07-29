@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,12 +6,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.report import Report
 from app.models.roster import Roster
 from app.models.user import User
+from app.utils.timezone import today_malaysia
 
 
 async def get_warden_dashboard(
     current_user: User, db: AsyncSession
 ) -> dict:
-    today = date.today()
+    today = today_malaysia()
     week_start = today - timedelta(days=today.weekday())
 
     stats = {
@@ -125,7 +126,7 @@ async def get_warden_dashboard(
 async def get_admin_dashboard(
     current_user: User, db: AsyncSession
 ) -> dict:
-    today = date.today()
+    today = today_malaysia()
     week_start = today - timedelta(days=today.weekday())
     week_end = week_start + timedelta(days=6)
 

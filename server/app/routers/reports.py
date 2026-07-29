@@ -109,7 +109,8 @@ async def list_reports(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    today = date.today()
+    from app.utils.timezone import today_malaysia
+    today = today_malaysia()
     if not week_start:
         week_start = today - timedelta(days=today.weekday())
 

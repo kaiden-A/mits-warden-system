@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.roster import Roster
 from app.models.user import User
+from app.utils.timezone import today_malaysia
 
 
 async def get_weekly_roster(week_start: date, db: AsyncSession) -> list[dict]:
@@ -48,7 +49,7 @@ async def get_weekly_roster(week_start: date, db: AsyncSession) -> list[dict]:
 
 
 async def get_today_roster(db: AsyncSession) -> dict | None:
-    today = date.today()
+    today = today_malaysia()
 
     result = await db.execute(
         select(Roster).where(Roster.date == today)
