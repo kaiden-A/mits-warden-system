@@ -43,28 +43,42 @@ export default function TodayPage() {
   const handleSave = async (data: any, status: string) => {
     setSaving(true);
     try {
-      const body = { ...data, status };
+      const isSubmitting = status === 'submitted';
+
       if (reportId && report?.status === 'draft') {
-        const updated = await apiPatch(`/api/reports/${reportId}`, body);
+        const updated = await apiPatch(`/api/reports/${reportId}`, data);
         setReport(updated);
         setReportId(updated.id);
-        if (status === 'submitted') {
+        if (isSubmitting) {
           await apiPost(`/api/reports/${updated.id}/submit`);
           setReport({ ...updated, status: 'submitted' });
         }
+      } else if (reportId && report?.status === 'submitted') {
+        showToast('Laporan sudah dihantar.');
+        setShowForm(false);
+        setSaving(false);
+        return;
       } else {
-        const created = await apiPost('/api/reports', body);
+        const created = await apiPost('/api/reports', { ...data, status: 'draft' });
         setReport(created);
         setReportId(created.id);
-        if (status === 'submitted') {
+        if (isSubmitting) {
           await apiPost(`/api/reports/${created.id}/submit`);
           setReport({ ...created, status: 'submitted' });
         }
       }
+
       setShowForm(false);
-      showToast(status === 'draft' ? 'Draf disimpan.' : 'Laporan dihantar.');
+      showToast(isSubmitting ? 'Laporan dihantar.' : 'Draf disimpan.');
     } catch (err: any) {
-      showToast(err.message || 'Gagal menyimpan laporan.');
+      const msg = err.message || '';
+      if (msg.includes('draft')) {
+        setReport((prev: any) => prev ? { ...prev, status: 'submitted' } : prev);
+        setShowForm(false);
+      } else if (msg.includes('already')) {
+        setShowForm(false);
+      }
+      showToast(msg || 'Gagal menyimpan laporan.');
     } finally {
       setSaving(false);
     }
@@ -78,7 +92,11 @@ export default function TodayPage() {
       setReport((prev: any) => ({ ...prev, status: 'submitted' }));
       showToast('Laporan dihantar.');
     } catch (err: any) {
-      showToast(err.message || 'Gagal menghantar.');
+      const msg = err.message || '';
+      if (msg.includes('draft')) {
+        setReport((prev: any) => prev ? { ...prev, status: 'submitted' } : prev);
+      }
+      showToast(msg || 'Gagal menghantar.');
     } finally {
       setSaving(false);
     }
@@ -100,14 +118,14 @@ export default function TodayPage() {
               <h2 className="font-heading text-2xl font-bold text-ink-text">Laporan Hari Ini</h2>
             </div>
           </div>
-          <div className="bg-paper-raised border border-paper-line rounded-lg p-8 text-center">
-            <span className="material-symbols-outlined text-5xl text-dim-text opacity-40 mb-3 block">description</span>
-            <h3 className="font-heading font-semibold text-lg mb-2">Belum ada laporan untuk hari ini</h3>
+          <div className="bg-paper-raised border border-paper-line rounded-lg p-6 sm:p-8 text-center">
+            <span className="material-symbols-outlined text-4xl sm:text-5xl text-dim-text opacity-40 mb-3 block">description</span>
+            <h3 className="font-heading font-semibold text-base sm:text-lg mb-2">Belum ada laporan untuk hari ini</h3>
             <p className="text-sm text-dim-text max-w-xs mx-auto mb-6">
               Sila lengkapkan laporan pemeriksaan harian untuk hari ini.
             </p>
             <button type="button" onClick={() => setShowForm(true)}
-              className="px-5 py-2.5 text-base font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
+              className="w-full sm:w-auto px-5 py-3 sm:py-2.5 text-base font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
               Buat Laporan Baru
             </button>
           </div>
@@ -135,31 +153,31 @@ export default function TodayPage() {
     const isDraft = report.status === 'draft';
     return (
       <div>
-        <div className="flex items-baseline justify-between flex-wrap gap-3 mb-6">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
           <div>
-            <span className="block font-mono text-[0.72rem] uppercase tracking-wider text-dim-text mb-1">{dateLabel}</span>
-            <h2 className="font-heading text-2xl font-bold text-ink-text">Laporan Hari Ini</h2>
+            <span className="block font-mono text-[0.68rem] uppercase tracking-wider text-dim-text mb-0.5">{dateLabel}</span>
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-ink-text">Laporan Hari Ini</h2>
           </div>
           <Stamp status={report.status} />
         </div>
 
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-8 text-center">
+        <div className="bg-paper-raised border border-paper-line rounded-lg p-6 sm:p-8 text-center">
           <span className={`material-symbols-outlined text-3xl mb-2 block ${isDraft ? 'text-dim-text' : 'text-green'}`}>
             {isDraft ? 'edit_note' : 'check_circle'}
           </span>
-          <h3 className="font-heading font-semibold text-lg">Laporan telah direkodkan</h3>
+          <h3 className="font-heading font-semibold text-base sm:text-lg">Laporan telah direkodkan</h3>
           <div className="text-sm text-dim-text mt-1 mb-3">
             {countRatedSections(report)}/11 bahagian dinilai
-            · Masa: {report.inspection_time || '—'}
+            · {report.inspection_time || '—'}
           </div>
           {isDraft && (
-            <div className="flex justify-center gap-2 mt-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-2 mt-4">
               <button type="button" onClick={() => setShowForm(true)}
-                className="px-3 py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
+                className="w-full sm:w-auto px-4 py-3 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
                 Sunting Draf
               </button>
               <button type="button" onClick={handleSubmitDraft} disabled={saving}
-                className="px-3 py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
+                className="w-full sm:w-auto px-4 py-3 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
                 {saving ? '…' : 'Hantar Laporan'}
               </button>
             </div>
@@ -170,7 +188,7 @@ export default function TodayPage() {
               setDetailReport(r);
               setShowDetail(true);
             }}
-              className="px-3 py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors mt-4">
+              className="w-full sm:w-auto px-4 py-3 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors mt-4">
               Lihat Laporan
             </button>
           )}

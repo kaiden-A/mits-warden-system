@@ -23,7 +23,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className={`fixed bottom-5 left-1/2 -translate-x-1/2 bg-ink text-paper px-4 py-2.5 rounded text-sm shadow-lg z-80 transition-all duration-200 pointer-events-none ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+      <div className={`fixed bottom-20 md:bottom-5 left-1/2 -translate-x-1/2 bg-ink text-paper px-4 py-2.5 rounded text-sm shadow-lg z-80 transition-all duration-200 pointer-events-none ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
         {msg}
       </div>
     </ToastContext.Provider>

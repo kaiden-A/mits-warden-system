@@ -102,12 +102,12 @@ export default function AdminSchedulePage() {
       />
 
       <div className="bg-paper-raised border border-paper-line rounded-lg p-4">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+        <div className="table-scroll -mx-4 px-4 sm:mx-0 sm:px-0">
+          <table className="w-full border-collapse min-w-[500px] sm:min-w-0">
             <thead>
               <tr>
-                <th className="text-left text-[0.68rem] uppercase tracking-wider text-dim-text font-mono font-semibold py-2 px-2 border-b border-paper-line w-[90px]">Hari</th>
-                <th className="text-left text-[0.68rem] uppercase tracking-wider text-dim-text font-mono font-semibold py-2 px-2 border-b border-paper-line w-[90px]">Tarikh</th>
+                <th className="text-left text-[0.68rem] uppercase tracking-wider text-dim-text font-mono font-semibold py-2 px-2 border-b border-paper-line w-[80px]">Hari</th>
+                <th className="text-left text-[0.68rem] uppercase tracking-wider text-dim-text font-mono font-semibold py-2 px-2 border-b border-paper-line w-[80px]">Tarikh</th>
                 <th className="text-left text-[0.68rem] uppercase tracking-wider text-dim-text font-mono font-semibold py-2 px-2 border-b border-paper-line">Asrama Putera</th>
                 <th className="text-left text-[0.68rem] uppercase tracking-wider text-dim-text font-mono font-semibold py-2 px-2 border-b border-paper-line">Asrama Puteri</th>
               </tr>
@@ -118,12 +118,12 @@ export default function AdminSchedulePage() {
                 const dayRoster = getDayRoster(ds);
                 return (
                   <tr key={ds}>
-                    <td className="py-3 px-2 border-b border-paper-line"><strong className="text-sm">{malayDay(d)}</strong></td>
-                    <td className="py-3 px-2 border-b border-paper-line font-mono text-xs text-dim-text">{fmtShort(d)}</td>
+                    <td className="py-3 px-2 border-b border-paper-line"><strong className="text-sm">{malayDay(d).slice(0, 3)}</strong></td>
+                    <td className="py-3 px-2 border-b border-paper-line font-mono text-xs text-dim-text">{d.getDate()}/{d.getMonth() + 1}</td>
                     <td className="py-3 px-2 border-b border-paper-line">
                       <select id={`sched-putera-${ds}`}
                         defaultValue={dayRoster?.putera?.id || ''}
-                        className="w-full px-2.5 py-2 border border-paper-line rounded bg-white text-sm text-ink-text outline-none focus-visible:border-brass">
+                        className="w-full px-2.5 py-2.5 border border-paper-line rounded bg-white text-sm text-ink-text outline-none focus-visible:border-brass min-h-[40px]">
                         <option value="">— Pilih —</option>
                         {puteraWardens.map(w => (
                           <option key={w.id} value={w.id}>{w.name}</option>
@@ -133,7 +133,7 @@ export default function AdminSchedulePage() {
                     <td className="py-3 px-2 border-b border-paper-line">
                       <select id={`sched-puteri-${ds}`}
                         defaultValue={dayRoster?.puteri?.id || ''}
-                        className="w-full px-2.5 py-2 border border-paper-line rounded bg-white text-sm text-ink-text outline-none focus-visible:border-brass">
+                        className="w-full px-2.5 py-2.5 border border-paper-line rounded bg-white text-sm text-ink-text outline-none focus-visible:border-brass min-h-[40px]">
                         <option value="">— Pilih —</option>
                         {puteriWardens.map(w => (
                           <option key={w.id} value={w.id}>{w.name}</option>

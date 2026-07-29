@@ -94,7 +94,8 @@ export default function AdminWardensPage() {
         </button>
       </div>
 
-      <div className="bg-paper-raised border border-paper-line rounded-lg p-4 overflow-x-auto">
+      {/* Desktop table */}
+      <div className="hidden sm:block bg-paper-raised border border-paper-line rounded-lg p-4 overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr>
@@ -124,17 +125,17 @@ export default function AdminWardensPage() {
                 <td className="py-3 px-2 border-b border-paper-line">
                   <div className="flex gap-1.5 justify-end">
                     <button type="button" onClick={() => router.push(`/reports?warden=${w.id}`)}
-                      className="px-2 py-1 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
+                      className="px-3 py-1.5 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
                       Lihat Laporan
                     </button>
                     {w.status === 'active' ? (
                       <button type="button" onClick={() => setConfirmRevokeId(w.id)}
-                        className="px-2 py-1 text-xs font-semibold border border-red rounded bg-transparent text-red hover:bg-red-wash transition-colors">
+                        className="px-3 py-1.5 text-xs font-semibold border border-red rounded bg-transparent text-red hover:bg-red-wash transition-colors">
                         Tarik Akses
                       </button>
                     ) : (
                       <button type="button" onClick={() => handleReinstate(w.id)}
-                        className="px-2 py-1 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
+                        className="px-3 py-1.5 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
                         Aktifkan Semula
                       </button>
                     )}
@@ -144,6 +145,48 @@ export default function AdminWardensPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card list */}
+      <div className="sm:hidden space-y-3">
+        {wardens.map(w => (
+          <div key={w.id} className="bg-paper-raised border border-paper-line rounded-lg p-4">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="font-heading font-semibold text-sm">{w.name}</p>
+                <p className="font-mono text-[0.65rem] text-dim-text mt-0.5">{w.email}</p>
+              </div>
+              <span className={`inline-flex items-center gap-1 font-mono text-[0.62rem] font-semibold tracking-widest uppercase px-2 py-0.5 border border-current rounded-[2px] leading-none whitespace-nowrap ${
+                w.status === 'active' ? 'text-green bg-green-wash border-green' : 'text-red bg-red-wash border-red'
+              }`}>
+                <span className="w-1 h-1 rounded-full bg-current"></span>
+                {w.status === 'active' ? 'Aktif' : 'Ditarik'}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-dim-text mb-3">
+              <span>{w.hostel}</span>
+              <span className="w-1 h-1 rounded-full bg-paper-line"></span>
+              <span>{w.report_count} laporan</span>
+            </div>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => router.push(`/reports?warden=${w.id}`)}
+                className="flex-1 py-2.5 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors text-center">
+                Lihat Laporan
+              </button>
+              {w.status === 'active' ? (
+                <button type="button" onClick={() => setConfirmRevokeId(w.id)}
+                  className="flex-1 py-2.5 text-xs font-semibold border border-red rounded bg-transparent text-red hover:bg-red-wash transition-colors text-center">
+                  Tarik Akses
+                </button>
+              ) : (
+                <button type="button" onClick={() => handleReinstate(w.id)}
+                  className="flex-1 py-2.5 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors text-center">
+                  Aktifkan Semula
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       <Modal open={showAddModal} onClose={() => setShowAddModal(false)}>

@@ -24,7 +24,7 @@ export default function Modal({ open, onClose, children, wide }: {
     <div ref={overlayRef}
       className="fixed inset-0 bg-black/45 flex items-center justify-center p-5 z-50"
       onClick={e => { if (e.target === overlayRef.current) onClose(); }}>
-      <div className={`bg-paper-raised rounded-lg shadow-lg w-full max-h-[88vh] overflow-y-auto p-6 ${wide ? 'max-w-2xl' : 'max-w-lg'}`}>
+      <div className={`bg-paper-raised rounded-lg shadow-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 ${wide ? 'max-w-2xl' : 'max-w-lg'}`}>
         {children}
       </div>
     </div>

@@ -66,7 +66,7 @@ export default function HistoryPage() {
         onThisWeek={() => setWeekStart(mondayOf(new Date()))}
       />
 
-      <div className="bg-paper-raised border border-paper-line rounded-lg p-4">
+      <div className="bg-paper-raised border border-paper-line rounded-lg p-3 sm:p-4">
         {days.map(d => {
           const ds = iso(d);
           const r = getReportForDate(ds);
@@ -74,17 +74,17 @@ export default function HistoryPage() {
 
           if (!r) {
             return (
-              <div key={ds} className="flex items-center gap-4 py-3.5 border-b border-paper-line last:border-b-0">
-                <div className="w-[78px] flex-shrink-0">
+              <div key={ds} className="flex items-center gap-3 py-3 border-b border-paper-line last:border-b-0">
+                <div className="w-[60px] sm:w-[78px] flex-shrink-0">
                   <div className="font-heading font-bold text-lg leading-none">{d.getDate()}</div>
-                  <div className="text-[0.68rem] text-dim-text uppercase font-mono">{malayDay(d)}</div>
+                  <div className="text-[0.62rem] sm:text-[0.68rem] text-dim-text uppercase font-mono">{malayDay(d).slice(0, 3)}</div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-dim-text italic">{isFuture ? 'Belum sampai masa' : 'Tiada laporan'}</div>
                 </div>
                 {!isFuture && (
                   <button type="button" onClick={() => router.push('/today')}
-                    className="px-2 py-1 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors flex-shrink-0">
+                    className="px-3 py-2 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors flex-shrink-0">
                     Tambah Entri
                   </button>
                 )}
@@ -93,29 +93,31 @@ export default function HistoryPage() {
           }
 
           return (
-            <div key={ds} className="flex items-center gap-4 py-3.5 border-b border-paper-line last:border-b-0">
-              <div className="w-[78px] flex-shrink-0">
+            <div key={ds} className="flex items-center gap-3 py-3 border-b border-paper-line last:border-b-0">
+              <div className="w-[60px] sm:w-[78px] flex-shrink-0">
                 <div className="font-heading font-bold text-lg leading-none">{d.getDate()}</div>
-                <div className="text-[0.68rem] text-dim-text uppercase font-mono">{malayDay(d)}</div>
+                <div className="text-[0.62rem] sm:text-[0.68rem] text-dim-text uppercase font-mono">{malayDay(d).slice(0, 3)}</div>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-ink-text truncate">
-                  {countRatedSections(r)}/11 bahagian dinilai · Masa: {r.inspection_time || '—'}
+                  {countRatedSections(r)}/11 bhgn · {r.inspection_time || '—'}
                   {r.is_substitution && r.duty_warden_name && (
-                    <span className="text-[0.62rem] font-semibold uppercase tracking-wider px-1.5 py-0.5 border border-brass text-brass-deep bg-brass-wash rounded-sm whitespace-nowrap ml-1 inline-block -rotate-2">
-                      bagi pihak {r.duty_warden_name}
+                    <span className="text-[0.58rem] font-semibold uppercase tracking-wider px-1 py-0.5 border border-brass text-brass-deep bg-brass-wash rounded-sm whitespace-nowrap ml-1 inline-block">
+                      bg {r.duty_warden_name}
                     </span>
                   )}
                 </div>
-                <div className="text-[0.72rem] text-dim-text font-mono mt-0.5">
+                <div className="text-[0.65rem] sm:text-[0.72rem] text-dim-text font-mono mt-0.5 truncate">
                   {r.aduan_kerosakan === 'TKD' ? 'TKD' : 'Ada kerosakan'} · {r.murid_sakit === 'TLB' ? 'TLB' : 'Ada laporan sakit'}
                 </div>
               </div>
-              <Stamp status={r.status} />
-              <button type="button" onClick={() => openDetail(r.id)}
-                className="px-2 py-1 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors flex-shrink-0">
-                {r.status === 'draft' ? 'Sunting' : 'Lihat'}
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="hidden sm:block"><Stamp status={r.status} /></div>
+                <button type="button" onClick={() => openDetail(r.id)}
+                  className="px-3 py-2 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
+                  {r.status === 'draft' ? 'Sunting' : 'Lihat'}
+                </button>
+              </div>
             </div>
           );
         })}

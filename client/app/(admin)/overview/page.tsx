@@ -52,22 +52,22 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-5">
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-4">
-          <div className="font-heading font-bold text-3xl leading-none text-ink-text">{data.stats.active_wardens}</div>
-          <div className="text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Warden Aktif</div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-5">
+        <div className="bg-paper-raised border border-paper-line rounded-lg p-3 sm:p-4">
+          <div className="font-heading font-bold text-2xl sm:text-3xl leading-none text-ink-text">{data.stats.active_wardens}</div>
+          <div className="text-[0.62rem] sm:text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Warden Aktif</div>
         </div>
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-4">
-          <div className="font-heading font-bold text-3xl leading-none text-brass-deep">{data.stats.pending_review_this_week}</div>
-          <div className="text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Belum Disemak — Minggu Ini</div>
+        <div className="bg-paper-raised border border-paper-line rounded-lg p-3 sm:p-4">
+          <div className="font-heading font-bold text-2xl sm:text-3xl leading-none text-brass-deep">{data.stats.pending_review_this_week}</div>
+          <div className="text-[0.62rem] sm:text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Belum Disemak</div>
         </div>
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-4">
-          <div className="font-heading font-bold text-3xl leading-none text-green">{data.stats.reviewed_this_week}</div>
-          <div className="text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Disemak — Minggu Ini</div>
+        <div className="bg-paper-raised border border-paper-line rounded-lg p-3 sm:p-4">
+          <div className="font-heading font-bold text-2xl sm:text-3xl leading-none text-green">{data.stats.reviewed_this_week}</div>
+          <div className="text-[0.62rem] sm:text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Disemak Minggu Ini</div>
         </div>
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-4">
-          <div className="font-heading font-bold text-3xl leading-none text-red">{data.stats.flagged_total}</div>
-          <div className="text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Ditanda, Sepanjang Masa</div>
+        <div className="bg-paper-raised border border-paper-line rounded-lg p-3 sm:p-4">
+          <div className="font-heading font-bold text-2xl sm:text-3xl leading-none text-red">{data.stats.flagged_total}</div>
+          <div className="text-[0.62rem] sm:text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Ditanda Sepanjang Masa</div>
         </div>
       </div>
 
@@ -78,16 +78,22 @@ export default function AdminOverviewPage() {
             <li className="text-sm text-dim-text">Tiada entri.</li>
           )}
           {data.recent_entries.map(entry => (
-            <li key={entry.id} className="flex items-center gap-4 py-3.5 border-b border-paper-line last:border-b-0">
-              <span className="font-semibold text-sm min-w-[140px]">{entry.warden_name}</span>
-              <span className="font-mono text-xs text-dim-text">{fmtShort(fromISO(entry.date))}</span>
-              <span className="flex-1 text-sm text-ink-text truncate">
-                <span className="material-symbols-outlined text-sm align-middle mr-1" style={{ color: '#7A7261' }}>
-                  {entry.status === 'flagged' ? 'flag' : entry.status === 'reviewed' ? 'check_circle' : entry.status === 'submitted' ? 'send' : 'edit_note'}
+            <li key={entry.id} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 py-3 border-b border-paper-line last:border-b-0">
+              <div className="flex items-center justify-between sm:justify-start gap-2">
+                <span className="font-semibold text-sm">{entry.warden_name}</span>
+                <span className="sm:hidden"><Stamp status={entry.status} /></span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-dim-text">
+                <span className="font-mono">{fmtShort(fromISO(entry.date))}</span>
+                <span className="hidden sm:inline">·</span>
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm" style={{ color: '#7A7261' }}>
+                    {entry.status === 'flagged' ? 'flag' : entry.status === 'reviewed' ? 'check_circle' : entry.status === 'submitted' ? 'send' : 'edit_note'}
+                  </span>
+                  {entry.inspection_time || '—'}
                 </span>
-                {entry.inspection_time || '—'}
-              </span>
-              <Stamp status={entry.status} />
+              </div>
+              <span className="hidden sm:inline ml-auto"><Stamp status={entry.status} /></span>
             </li>
           ))}
         </ul>

@@ -81,41 +81,41 @@ export default function ReportForm({ report, wardenName, wardenHostel, dateStr, 
       )}
 
       {!isReadOnly && (
-        <div className="flex justify-end gap-2 pb-4 mb-5 border-b border-paper-line">
+        <div className="flex gap-2 pb-4 mb-4 sm:mb-5 border-b border-paper-line">
           <button type="button" onClick={() => onSave(collectData(), 'draft')}
-            className="px-3 py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
-            Simpan sebagai Draf
+            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
+            Simpan Draf
           </button>
           <button type="button" onClick={() => onSave(collectData(), 'submitted')}
-            className="px-3 py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
+            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
             Hantar Laporan
           </button>
         </div>
       )}
 
-      <div className="bg-paper-raised border border-paper-line rounded-lg p-5">
-        <div className="grid grid-cols-5 gap-3 pb-4 mb-5 border-b border-paper-line">
+      <div className="bg-paper-raised border border-paper-line rounded-lg p-4 sm:p-5">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 pb-4 mb-4 sm:mb-5 border-b border-paper-line">
           <div>
-            <label className="block text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Tarikh</label>
-            <div className="px-2.5 py-2 bg-paper rounded text-sm font-medium">{dateStr}</div>
+            <label className="block text-[0.62rem] sm:text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Tarikh</label>
+            <div className="px-2 py-1.5 sm:px-2.5 sm:py-2 bg-paper rounded text-xs sm:text-sm font-medium">{dateStr}</div>
           </div>
           <div>
-            <label className="block text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Hari</label>
-            <div className="px-2.5 py-2 bg-paper rounded text-sm font-medium">{malayDay(dateObj)}</div>
+            <label className="block text-[0.62rem] sm:text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Hari</label>
+            <div className="px-2 py-1.5 sm:px-2.5 sm:py-2 bg-paper rounded text-xs sm:text-sm font-medium">{malayDay(dateObj)}</div>
           </div>
           <div>
-            <label className="block text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Warden</label>
-            <div className="px-2.5 py-2 bg-paper rounded text-sm font-medium">{wardenName}</div>
+            <label className="block text-[0.62rem] sm:text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Warden</label>
+            <div className="px-2 py-1.5 sm:px-2.5 sm:py-2 bg-paper rounded text-xs sm:text-sm font-medium truncate">{wardenName}</div>
           </div>
           <div>
-            <label className="block text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Asrama</label>
-            <div className="px-2.5 py-2 bg-paper rounded text-sm font-medium">{wardenHostel}</div>
+            <label className="block text-[0.62rem] sm:text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Asrama</label>
+            <div className="px-2 py-1.5 sm:px-2.5 sm:py-2 bg-paper rounded text-xs sm:text-sm font-medium truncate">{wardenHostel}</div>
           </div>
-          <div>
-            <label className="block text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Masa Pemeriksaan</label>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-[0.62rem] sm:text-[0.66rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Masa</label>
             <input type="time" value={inspectionTime} disabled={isReadOnly}
               onChange={e => setInspectionTime(e.target.value)}
-              className="w-full px-2.5 py-2 border border-paper-line rounded bg-white text-sm text-ink-text outline-none focus-visible:border-brass" />
+              className="w-full px-2 py-1.5 sm:px-2.5 sm:py-2 border border-paper-line rounded bg-white text-xs sm:text-sm text-ink-text outline-none focus-visible:border-brass min-h-[38px]" />
           </div>
         </div>
 
@@ -160,20 +160,20 @@ export default function ReportForm({ report, wardenName, wardenHostel, dateStr, 
 
           <div>
             <label className="block text-[0.72rem] font-semibold uppercase tracking-wider text-dim-text mb-1">10. Kawalan Keselamatan</label>
-            <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
               {[1, 2, 3, 4, 5].map(n => {
                 const desc = n === 1 ? 'Lemah' : n === 5 ? 'Cemerlang' : '';
                 const selected = kawalanKeselamatan === String(n);
                 return (
                   <button key={n} type="button" disabled={isReadOnly}
                     onClick={() => setKawalanKeselamatan(String(n))}
-                    className={`flex flex-col items-center gap-0.5 px-2 py-1.5 border-2 rounded text-sm font-semibold min-w-[48px] transition-all ${
+                    className={`flex flex-col items-center gap-0.5 px-3 py-2 sm:px-2 sm:py-1.5 border-2 rounded text-sm font-semibold min-w-[52px] sm:min-w-[48px] min-h-[44px] transition-all ${
                       selected
                         ? 'bg-ink text-paper border-ink'
                         : 'bg-transparent text-dim-text border-paper-line hover:border-brass'
                     } disabled:opacity-70`}>
                     <span className="text-base font-bold">{n}</span>
-                    {desc && <span className="text-[0.55rem] font-normal opacity-70 whitespace-nowrap">{desc}</span>}
+                    {desc && <span className="text-[0.55rem] font-normal opacity-70 whitespace-nowrap hidden sm:inline">{desc}</span>}
                   </button>
                 );
               })}
@@ -191,13 +191,13 @@ export default function ReportForm({ report, wardenName, wardenHostel, dateStr, 
       </div>
 
       {!isReadOnly && (
-        <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-paper-line">
+        <div className="flex gap-2 mt-5 pt-4 border-t border-paper-line">
           <button type="button" onClick={() => onSave(collectData(), 'draft')}
-            className="px-3 py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
-            Simpan sebagai Draf
+            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
+            Simpan Draf
           </button>
           <button type="button" onClick={() => onSave(collectData(), 'submitted')}
-            className="px-3 py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
+            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
             Hantar Laporan
           </button>
         </div>

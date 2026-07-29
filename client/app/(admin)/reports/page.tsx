@@ -124,18 +124,18 @@ export default function AdminReportsPage() {
                   return (
                     <div key={report.id}>
                       <button type="button" onClick={() => toggleDetail(report.id)}
-                        className="flex items-center gap-4 w-full py-3 pl-5 text-left hover:bg-paper transition-colors rounded-sm">
+                        className="flex items-center gap-3 w-full py-3 pl-3 sm:pl-5 pr-2 text-left hover:bg-paper transition-colors rounded-sm min-h-[52px]">
                         <span className={`text-xs font-mono text-dim-text transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`}>&#9654;</span>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm text-ink-text truncate">
                             <strong>{report.submitted_by_name || '—'}</strong>
                             <span className="text-dim-text font-normal"> ({report.hostel})</span>
                           </div>
-                          <div className="text-[0.72rem] text-dim-text font-mono mt-0.5">
-                            Masa: {report.inspection_time || '—'}
+                          <div className="text-[0.68rem] text-dim-text font-mono mt-0.5">
+                            {report.inspection_time || '—'}
                             {report.is_substitution && report.duty_warden_name && (
-                              <span className="ml-1.5 text-[0.62rem] font-semibold uppercase tracking-wider px-1.5 py-0.5 border border-brass text-brass-deep bg-brass-wash rounded-sm whitespace-nowrap -rotate-1 inline-block">
-                                bagi pihak {report.duty_warden_name}
+                              <span className="ml-1.5 text-[0.58rem] font-semibold uppercase tracking-wider px-1 py-0.5 border border-brass text-brass-deep bg-brass-wash rounded-sm whitespace-nowrap inline-block">
+                                bg pihak {report.duty_warden_name}
                               </span>
                             )}
                           </div>
@@ -145,19 +145,21 @@ export default function AdminReportsPage() {
 
                       <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[5000px]' : 'max-h-0'}`}>
                         {detail && (
-                          <div className="pl-5 pr-4 py-4 bg-paper border-t border-paper-line rounded-b-sm">
-                            <div className="grid grid-cols-2 gap-5">
+                          <div className="pl-4 sm:pl-5 pr-3 sm:pr-4 py-4 bg-paper border-t border-paper-line rounded-b-sm">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                               {SECTIONS_CONFIG.map(cfg => (
-                                <div key={cfg.id} className="col-span-2">
+                                <div key={cfg.id} className="sm:col-span-2">
                                   <h5 className="font-heading font-semibold text-sm mb-1 text-ink-text">{cfg.title}</h5>
-                                  <RatingTableReadOnly items={cfg.items} data={detail.ratings?.[cfg.id]} />
+                                  <div className="table-scroll">
+                                    <RatingTableReadOnly items={cfg.items} data={detail.ratings?.[cfg.id]} />
+                                  </div>
                                 </div>
                               ))}
-                              <div className="col-span-2">
+                              <div className="sm:col-span-2">
                                 <h5 className="font-heading font-semibold text-sm mb-1 text-ink-text">8. Aduan Kerosakan</h5>
                                 <p className="text-sm whitespace-pre-wrap">{detail.aduan_kerosakan}</p>
                               </div>
-                              <div className="col-span-2">
+                              <div className="sm:col-span-2">
                                 <h5 className="font-heading font-semibold text-sm mb-1 text-ink-text">9. Murid Sakit / Balik Luar Jadual</h5>
                                 <p className="text-sm whitespace-pre-wrap">{detail.murid_sakit}</p>
                               </div>
@@ -169,7 +171,7 @@ export default function AdminReportsPage() {
                                 <h5 className="font-heading font-semibold text-sm mb-1 text-ink-text">11. Catatan Tambahan</h5>
                                 <p className="text-sm whitespace-pre-wrap">{detail.catatan_tambahan || '—'}</p>
                               </div>
-                              <div className="col-span-2">
+                              <div className="sm:col-span-2">
                                 <ApprovalTrail
                                   submittedAt={detail.submitted_at}
                                   reviewedAt={detail.reviewed_at}
@@ -178,7 +180,7 @@ export default function AdminReportsPage() {
                                   flaggedBy={detail.flagged_by?.name}
                                 />
                               </div>
-                              <div className="col-span-2 mt-2 pt-3 border-t border-paper-line">
+                              <div className="sm:col-span-2 mt-2 pt-3 border-t border-paper-line">
                                 <label className="block text-[0.72rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Nota Pengurusan</label>
                                 <textarea id={`admin-note-${report.id}`}
                                   placeholder="Tambah nota untuk rekod…"
@@ -189,14 +191,14 @@ export default function AdminReportsPage() {
                                     const note = (document.getElementById(`admin-note-${report.id}`) as HTMLTextAreaElement)?.value || '';
                                     handleFlag(report.id, note);
                                   }}
-                                    className="px-2 py-1 text-xs font-semibold border border-red rounded bg-transparent text-red hover:bg-red-wash transition-colors">
+                                    className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-xs font-semibold border border-red rounded bg-transparent text-red hover:bg-red-wash transition-colors text-center">
                                     Tanda untuk Tindakan
                                   </button>
                                   <button type="button" onClick={() => {
                                     const note = (document.getElementById(`admin-note-${report.id}`) as HTMLTextAreaElement)?.value || '';
                                     handleReview(report.id, note);
                                   }}
-                                    className="px-2 py-1 text-xs font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
+                                    className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-xs font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors text-center">
                                     Tanda Disemak
                                   </button>
                                 </div>

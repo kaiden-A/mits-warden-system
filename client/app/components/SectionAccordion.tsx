@@ -22,7 +22,7 @@ export function SectionAccordionEditable({ section, data, onRatingChange, defaul
   return (
     <div>
       <button type="button" onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 w-full py-2.5 px-1 text-left border-b border-paper-line hover:bg-paper rounded-sm transition-colors">
+        className="flex items-center gap-2 w-full py-3 sm:py-2.5 px-1 text-left border-b border-paper-line hover:bg-paper rounded-sm transition-colors min-h-[44px]">
         <span className={`text-xs font-mono text-dim-text transition-transform duration-300 ${open ? 'rotate-90' : ''}`}>&#9654;</span>
         <h4 className="text-sm font-heading font-semibold flex-1">{config.title}</h4>
       </button>
@@ -46,7 +46,7 @@ export function SectionAccordionReadOnly({ section, data }: {
   return (
     <div>
       <button type="button" onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 w-full py-2.5 px-1 text-left border-b border-paper-line hover:bg-paper rounded-sm transition-colors">
+        className="flex items-center gap-2 w-full py-3 sm:py-2.5 px-1 text-left border-b border-paper-line hover:bg-paper rounded-sm transition-colors min-h-[44px]">
         <span className={`text-xs font-mono text-dim-text transition-transform duration-300 ${open ? 'rotate-90' : ''}`}>&#9654;</span>
         <h4 className="text-sm font-heading font-semibold flex-1">{config.title}</h4>
       </button>

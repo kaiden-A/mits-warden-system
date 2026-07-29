@@ -7,7 +7,7 @@ interface DayStatus {
 
 export default function WeekProgress({ days, today }: { days: DayStatus[]; today: string }) {
   return (
-    <div className="flex gap-2 justify-center flex-wrap">
+    <div className="flex gap-1.5 sm:gap-2 justify-center flex-wrap">
       {days.map(d => {
         const isToday = d.date === today;
         const isFuture = d.date > today;
@@ -35,12 +35,12 @@ export default function WeekProgress({ days, today }: { days: DayStatus[]; today
         const dateObj = new Date(d.date + 'T00:00:00');
 
         return (
-          <div key={d.date} className={`flex flex-col items-center gap-0.5 py-2 px-2.5 rounded min-w-[56px] border ${cls}`}>
-            <span className="text-[0.6rem] uppercase tracking-wider text-dim-text font-mono">
+          <div key={d.date} className={`flex flex-col items-center gap-0.5 py-1.5 sm:py-2 px-1.5 sm:px-2.5 rounded min-w-[44px] sm:min-w-[56px] border ${cls}`}>
+            <span className="text-[0.55rem] sm:text-[0.6rem] uppercase tracking-wider text-dim-text font-mono">
               {malayDay(dateObj).slice(0, 3)}
             </span>
-            <span className="text-sm font-semibold">{dateObj.getDate()}</span>
-            <span className="text-xs mt-0.5">{check}</span>
+            <span className="text-xs sm:text-sm font-semibold">{dateObj.getDate()}</span>
+            <span className="text-[0.65rem] sm:text-xs mt-0.5">{check}</span>
           </div>
         );
       })}

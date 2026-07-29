@@ -81,52 +81,52 @@ export default function WardenDashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-5">
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-4">
-          <div className="font-heading font-bold text-3xl leading-none text-ink-text">{data.stats.total_reports}</div>
-          <div className="text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Jumlah Laporan</div>
+      <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-5">
+        <div className="bg-paper-raised border border-paper-line rounded-lg p-3 sm:p-4">
+          <div className="font-heading font-bold text-2xl sm:text-3xl leading-none text-ink-text">{data.stats.total_reports}</div>
+          <div className="text-[0.6rem] sm:text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Jumlah Laporan</div>
         </div>
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-4">
-          <div className="font-heading font-bold text-3xl leading-none text-brass-deep">{data.stats.submitted_this_week}</div>
-          <div className="text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Dihantar Minggu Ini</div>
+        <div className="bg-paper-raised border border-paper-line rounded-lg p-3 sm:p-4">
+          <div className="font-heading font-bold text-2xl sm:text-3xl leading-none text-brass-deep">{data.stats.submitted_this_week}</div>
+          <div className="text-[0.6rem] sm:text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Dihantar Minggu Ini</div>
         </div>
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-4">
-          <div className="font-heading font-bold text-3xl leading-none text-green">{data.stats.reviewed_total}</div>
-          <div className="text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Telah Disemak</div>
+        <div className="bg-paper-raised border border-paper-line rounded-lg p-3 sm:p-4">
+          <div className="font-heading font-bold text-2xl sm:text-3xl leading-none text-green">{data.stats.reviewed_total}</div>
+          <div className="text-[0.6rem] sm:text-[0.7rem] text-dim-text uppercase tracking-wider font-mono mt-1">Telah Disemak</div>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 p-4 bg-paper-raised border border-paper-line rounded-lg mb-5">
+      <div className="flex items-center gap-3 p-3 sm:p-4 bg-paper-raised border border-paper-line rounded-lg mb-5">
         {hasReport ? (
           <>
-            <span className="material-symbols-outlined text-3xl"
+            <span className="material-symbols-outlined text-2xl sm:text-3xl flex-shrink-0"
               style={{ color: reportStatus === 'reviewed' ? '#43604B' : reportStatus === 'flagged' ? '#A23E30' : reportStatus === 'submitted' ? '#7C5E1F' : '#7A7261' }}>
               {reportStatus === 'reviewed' ? 'check_circle' : reportStatus === 'flagged' ? 'warning' : reportStatus === 'submitted' ? 'send' : 'edit_note'}
             </span>
-            <div className="flex-1">
-              <h3 className="font-heading font-semibold text-base">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-heading font-semibold text-sm sm:text-base truncate">
                 Laporan Hari Ini {reportStatus === 'draft' ? '(Draf)' : 'Telah Direkodkan'}
               </h3>
-              <p className="text-sm text-dim-text">
+              <p className="text-xs sm:text-sm text-dim-text truncate">
                 <Stamp status={reportStatus} /> {reportStatus !== 'draft' ? 'Dihantar' : ''}
               </p>
             </div>
             <button type="button" onClick={() => router.push('/today')}
-              className="px-2.5 py-1.5 text-xs font-semibold rounded border border-paper-line bg-transparent text-ink-text hover:bg-paper transition-colors">
+              className="px-3 py-2 sm:px-2.5 sm:py-1.5 text-xs font-semibold rounded border border-paper-line bg-transparent text-ink-text hover:bg-paper transition-colors flex-shrink-0">
               {reportStatus === 'draft' ? 'Sunting' : 'Lihat'}
             </button>
           </>
         ) : (
           <>
-            <span className="material-symbols-outlined text-3xl text-dim-text">radio_button_unchecked</span>
-            <div className="flex-1">
-              <h3 className="font-heading font-semibold text-base">
+            <span className="material-symbols-outlined text-2xl sm:text-3xl text-dim-text flex-shrink-0">radio_button_unchecked</span>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-heading font-semibold text-sm sm:text-base">
                 Belum ada laporan hari ini{isScheduled ? ' — Anda bertugas' : ''}
               </h3>
-              <p className="text-sm text-dim-text">Sila hantar laporan pemeriksaan harian anda.</p>
+              <p className="text-xs sm:text-sm text-dim-text">Sila hantar laporan.</p>
             </div>
             <button type="button" onClick={() => router.push('/today')}
-              className="px-2.5 py-1.5 text-xs font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
+              className="px-4 py-2.5 sm:px-2.5 sm:py-1.5 text-xs font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors flex-shrink-0">
               Buat Laporan
             </button>
           </>
@@ -134,8 +134,8 @@ export default function WardenDashboardPage() {
       </div>
 
       {pastDays.length > 0 && (
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-4 mb-5">
-          <h3 className="font-heading font-semibold text-base mb-3">Rekap Minggu Ini</h3>
+        <div className="bg-paper-raised border border-paper-line rounded-lg p-3 sm:p-4 mb-5">
+          <h3 className="font-heading font-semibold text-sm sm:text-base mb-3">Rekap Minggu Ini</h3>
           <div className="flex flex-col gap-2">
             {pastDays.map(d => {
               const ds = iso(d);
@@ -149,8 +149,8 @@ export default function WardenDashboardPage() {
                     const wn = dutyWardenName(hostel, dayRoster);
                     return (
                       <div key={hostel} className="flex items-center gap-2 py-1 text-sm">
-                        <span className="font-semibold min-w-[110px] text-ink-text">{hostel}</span>
-                        <span className="text-xs text-dim-text min-w-[180px]">{wn} (Bertugas)</span>
+                        <span className="font-semibold text-xs sm:text-sm min-w-[90px] sm:min-w-[110px] text-ink-text">{hostel === 'Asrama Putera' ? 'Putera' : 'Puteri'}</span>
+                        <span className="text-xs text-dim-text truncate">{wn}</span>
                       </div>
                     );
                   })}

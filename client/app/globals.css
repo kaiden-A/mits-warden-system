@@ -24,6 +24,7 @@
 
 html {
   font-family: var(--font-body), sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
 :focus-visible {
@@ -33,4 +34,64 @@ html {
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
+}
+
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-left { padding-left: env(safe-area-inset-left, 0px); }
+.safe-right { padding-right: env(safe-area-inset-right, 0px); }
+
+/* Touch-friendly tap targets */
+button, a, select, input[type="checkbox"], input[type="radio"] {
+  cursor: pointer;
+}
+
+/* Better select appearance on mobile */
+select {
+  appearance: auto;
+  -webkit-appearance: auto;
+}
+
+/* Responsive table helper: hide specific columns on mobile */
+@media (max-width: 767px) {
+  .mobile-hidden { display: none !important; }
+  .mobile-full { width: 100% !important; }
+}
+
+/* Horizontal scroll for tables on mobile */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll table {
+  min-width: 600px;
+}
+
+/* Card-mode for tables on small screens */
+@media (max-width: 767px) {
+  .table-card table thead { display: none; }
+  .table-card table tbody tr {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-paper-line);
+  }
+  .table-card table tbody tr:last-child { border-bottom: none; }
+  .table-card table tbody td {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    border: none;
+  }
+  .table-card table tbody td::before {
+    content: attr(data-label);
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    color: var(--color-dim-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
 }
