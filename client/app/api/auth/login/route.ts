@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND = process.env.BACKEND_URL || 'http://localhost:8000';
+const BACKEND = process.env.BACKEND_URL ;
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
+
+  console.log(BACKEND)
 
   const res = await fetch(`${BACKEND}/api/auth/login`, {
     method: 'POST',
