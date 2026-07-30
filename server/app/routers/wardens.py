@@ -7,6 +7,7 @@ from app.dependencies import get_current_user, require_admin
 from app.models.report import Report
 from app.models.user import User
 from app.schemas.user import UserCreate, UserStatusUpdate, WardenListItem, WardenListResponse
+from app.services.email_service import notify_warden_created
 from app.utils.security import hash_password
 
 router = APIRouter(prefix="/wardens", tags=["wardens"])
@@ -79,6 +80,13 @@ async def create_warden(
     db.add(user)
     await db.commit()
     await db.refresh(user)
+
+    await notify_warden_created(
+        to_email=user.email,
+        name=user.name,
+        hostel=user.hostel or "",
+        password=password,
+    )
 
     return WardenListItem(
         id=user.id,

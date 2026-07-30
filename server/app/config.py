@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALLOWED_ORIGINS: str = "http://localhost:3000"
+    MOTIONU_API_URL: str = "https://api.motionukict.com/"
+    MOTIONU_API_KEY: str = ""
+    FRONTEND_URL: str = "http://localhost:3000"
 
     @property
     def allowed_origins_list(self) -> list[str]:

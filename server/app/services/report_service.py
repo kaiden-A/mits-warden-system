@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.report import ApprovalLog, Report, ReportRating
 from app.models.roster import Roster
 from app.models.user import User
+from app.services.email_service import notify_substitution
 
 
 async def create_report(
@@ -106,6 +107,18 @@ async def create_report(
 
     await db.commit()
     await db.refresh(report)
+
+    if report.is_substitution and report.status == "submitted":
+        duty_warden = await db.get(User, report.duty_warden_id)
+        if duty_warden:
+            await notify_substitution(
+                to_email=duty_warden.email,
+                duty_warden_name=duty_warden.name,
+                submitted_by_name=current_user.name,
+                date=report.date.isoformat(),
+                hostel=report.hostel,
+            )
+
     return report
 
 
@@ -223,6 +236,18 @@ async def submit_report(
     )
     await db.commit()
     await db.refresh(report)
+
+    if report.is_substitution:
+        duty_warden = await db.get(User, report.duty_warden_id)
+        if duty_warden:
+            await notify_substitution(
+                to_email=duty_warden.email,
+                duty_warden_name=duty_warden.name,
+                submitted_by_name=current_user.name,
+                date=report.date.isoformat(),
+                hostel=report.hostel,
+            )
+
     return report
 
 
