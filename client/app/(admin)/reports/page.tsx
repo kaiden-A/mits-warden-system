@@ -8,6 +8,7 @@ import WeekFlip from '@/app/components/WeekFlip';
 import { RatingTableReadOnly } from '@/app/components/RatingTable';
 import ApprovalTrail from '@/app/components/ApprovalTrail';
 import { useToast } from '@/app/components/Toast';
+import LoadingSpinner from '@/app/components/LoadingSpinner';
 
 export default function AdminReportsPage() {
   const { showToast } = useToast();
@@ -16,6 +17,7 @@ export default function AdminReportsPage() {
   const [reportDetails, setReportDetails] = useState<Record<string, any>>({});
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const weekEnd = addDays(weekStart, 6);
   const isCurrentWeek = iso(weekStart) === iso(mondayOf(new Date()));
@@ -58,6 +60,7 @@ export default function AdminReportsPage() {
   };
 
   const handleReview = async (id: string, adminNote: string) => {
+    setActionLoading(id);
     try {
       await apiPost(`/api/reports/${id}/review`, { admin_note: adminNote });
       updateReportLocally(id, { status: 'reviewed' });
@@ -66,10 +69,13 @@ export default function AdminReportsPage() {
       setReportDetails(prev => ({ ...prev, [id]: detail }));
     } catch (err: any) {
       showToast(err.message || 'Gagal menyemak laporan.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const handleFlag = async (id: string, adminNote: string) => {
+    setActionLoading(id);
     try {
       await apiPost(`/api/reports/${id}/flag`, { admin_note: adminNote });
       updateReportLocally(id, { status: 'flagged' });
@@ -78,11 +84,13 @@ export default function AdminReportsPage() {
       setReportDetails(prev => ({ ...prev, [id]: detail }));
     } catch (err: any) {
       showToast(err.message || 'Gagal menanda laporan.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
   if (loading) {
-    return <div className="text-center py-12 text-dim-text">Memuatkan…</div>;
+    return <div className="text-center py-12 text-dim-text flex items-center justify-center gap-2"><LoadingSpinner size={18} />Memuatkan…</div>;
   }
 
   return (
@@ -190,15 +198,17 @@ export default function AdminReportsPage() {
                                   <button type="button" onClick={() => {
                                     const note = (document.getElementById(`admin-note-${report.id}`) as HTMLTextAreaElement)?.value || '';
                                     handleFlag(report.id, note);
-                                  }}
-                                    className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-xs font-semibold border border-red rounded bg-transparent text-red hover:bg-red-wash transition-colors text-center">
+                                  }} disabled={actionLoading === report.id}
+                                    className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-xs font-semibold border border-red rounded bg-transparent text-red hover:bg-red-wash disabled:opacity-60 transition-colors text-center inline-flex items-center justify-center gap-1.5">
+                                    {actionLoading === report.id && <LoadingSpinner size={14} />}
                                     Tanda untuk Tindakan
                                   </button>
                                   <button type="button" onClick={() => {
                                     const note = (document.getElementById(`admin-note-${report.id}`) as HTMLTextAreaElement)?.value || '';
                                     handleReview(report.id, note);
-                                  }}
-                                    className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-xs font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors text-center">
+                                  }} disabled={actionLoading === report.id}
+                                    className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-xs font-semibold rounded bg-brass text-white hover:bg-brass-deep disabled:opacity-60 transition-colors text-center inline-flex items-center justify-center gap-1.5">
+                                    {actionLoading === report.id && <LoadingSpinner size={14} />}
                                     Tanda Disemak
                                   </button>
                                 </div>

@@ -236,7 +236,7 @@ async def create_report(
     if current_user.role != "warden":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only wardens can create reports",
+            detail="Hanya warden boleh mencipta laporan.",
         )
 
     report = await report_service.create_report(

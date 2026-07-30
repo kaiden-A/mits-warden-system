@@ -22,13 +22,13 @@ async def login(email: str, password: str, db: AsyncSession) -> dict:
     if not user or not verify_password(password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Emel atau kata laluan tidak sah.",
         )
 
     if user.status != "active":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account is revoked",
+            detail="Akaun ini telah ditarik akses. Sila hubungi pentadbir.",
         )
 
     user.last_login_at = datetime.now(timezone.utc)
@@ -77,7 +77,7 @@ async def refresh_access_token(refresh_token: str, db: AsyncSession) -> dict:
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired refresh token",
+            detail="Token sah semula tidak sah atau telah tamat tempoh.",
         )
 
     token.revoked = True
@@ -88,7 +88,7 @@ async def refresh_access_token(refresh_token: str, db: AsyncSession) -> dict:
     if not user or user.status != "active":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account revoked or not found",
+            detail="Akaun tidak dijumpai atau telah ditarik akses.",
         )
 
     access_token = create_access_token(

@@ -22,7 +22,7 @@ async def create_report(
     if not hostel:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Admins cannot create reports",
+            detail="Pentadbir tidak boleh mencipta laporan.",
         )
 
     existing = await db.execute(
@@ -33,7 +33,7 @@ async def create_report(
     if existing.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Report already exists for this date and hostel",
+            detail="Laporan sudah wujud untuk tarikh dan asrama ini.",
         )
 
     roster_result = await db.execute(
@@ -44,7 +44,7 @@ async def create_report(
     if not roster_entry:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No roster entry for this date",
+            detail="Tiada jadual warden untuk tarikh ini. Sila hubungi pentadbir.",
         )
 
     if hostel == "Asrama Putera":
@@ -143,13 +143,13 @@ async def update_report(
     if report.status != "draft":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only draft reports can be edited",
+            detail="Hanya laporan draf boleh disunting.",
         )
 
     if report.submitted_by != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only edit your own reports",
+            detail="Anda hanya boleh menyunting laporan sendiri.",
         )
 
     for field in (
@@ -178,6 +178,8 @@ async def update_report(
 
         for rating in existing_ratings:
             await db.delete(rating)
+
+        await db.flush()
 
         for section_id, items in ratings_data.items():
             if items:
@@ -215,13 +217,13 @@ async def submit_report(
     if report.submitted_by != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only submit your own reports",
+            detail="Anda hanya boleh menghantar laporan sendiri.",
         )
 
     if report.status != "draft":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only draft reports can be submitted",
+            detail="Hanya laporan draf boleh dihantar.",
         )
 
     report.status = "submitted"
@@ -271,7 +273,7 @@ async def review_report(
     if report.status not in ("submitted", "flagged"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only submitted or flagged reports can be reviewed",
+            detail="Laporan mesti dalam status dihantar atau ditanda untuk disemak.",
         )
 
     report.status = "reviewed"
@@ -313,7 +315,7 @@ async def flag_report(
     if report.status == "reviewed":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot flag a reviewed report",
+            detail="Laporan yang telah disemak tidak boleh ditanda semula.",
         )
 
     report.status = "flagged"

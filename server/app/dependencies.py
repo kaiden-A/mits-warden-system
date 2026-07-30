@@ -19,14 +19,14 @@ async def get_current_user(
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
+            detail="Sesi telah tamat. Sila log masuk semula.",
         )
 
     user_id = payload.get("sub")
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload",
+            detail="Token tidak sah. Sila log masuk semula.",
         )
 
     result = await db.execute(select(User).where(User.id == user_id))
@@ -34,7 +34,7 @@ async def get_current_user(
     if not user or user.status != "active":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account revoked or not found",
+            detail="Akaun tidak dijumpai atau telah ditarik akses.",
         )
     return user
 
@@ -43,6 +43,6 @@ async def require_admin(user: User = Depends(get_current_user)) -> User:
     if user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required",
+            detail="Akses ini hanya untuk pentadbir.",
         )
     return user

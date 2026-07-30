@@ -65,7 +65,7 @@ async def create_warden(
     if existing.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="User with this email already exists",
+            detail="Emel ini sudah didaftarkan dalam sistem.",
         )
 
     password = body.password or "changeme123"
@@ -116,7 +116,7 @@ async def update_warden_status(
     if body.status not in ("active", "revoked"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Status must be 'active' or 'revoked'",
+            detail="Status tidak sah. Gunakan 'active' atau 'revoked'.",
         )
 
     user.status = body.status

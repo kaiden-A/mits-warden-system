@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { SECTIONS_CONFIG, malayDay, fmtLong, fromISO } from '@/app/lib/constants';
 import { SectionAccordionEditable } from './SectionAccordion';
+import LoadingSpinner from './LoadingSpinner';
 
 interface ReportFormProps {
   report: any;
@@ -12,10 +13,11 @@ interface ReportFormProps {
   scheduledWardenName?: string | null;
   isSubstitution?: boolean;
   isReadOnly: boolean;
+  saving?: boolean;
   onSave: (data: any, status: string) => void;
 }
 
-export default function ReportForm({ report, wardenName, wardenHostel, dateStr, scheduledWardenName, isSubstitution, isReadOnly, onSave }: ReportFormProps) {
+export default function ReportForm({ report, wardenName, wardenHostel, dateStr, scheduledWardenName, isSubstitution, isReadOnly, saving, onSave }: ReportFormProps) {
   const [inspectionTime, setInspectionTime] = useState(report?.inspection_time || '');
   const [aduanKerosakan, setAduanKerosakan] = useState(report?.aduan_kerosakan || 'TKD');
   const [muridSakit, setMuridSakit] = useState(report?.murid_sakit || 'TLB');
@@ -82,13 +84,15 @@ export default function ReportForm({ report, wardenName, wardenHostel, dateStr, 
 
       {!isReadOnly && (
         <div className="flex gap-2 pb-4 mb-4 sm:mb-5 border-b border-paper-line">
-          <button type="button" onClick={() => onSave(collectData(), 'draft')}
-            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
-            Simpan Draf
+          <button type="button" onClick={() => onSave(collectData(), 'draft')} disabled={saving}
+            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper disabled:opacity-60 transition-colors inline-flex items-center justify-center gap-2">
+            {saving && <LoadingSpinner size={16} />}
+            {saving ? 'Menyimpan…' : 'Simpan Draf'}
           </button>
-          <button type="button" onClick={() => onSave(collectData(), 'submitted')}
-            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
-            Hantar Laporan
+          <button type="button" onClick={() => onSave(collectData(), 'submitted')} disabled={saving}
+            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep disabled:opacity-60 transition-colors inline-flex items-center justify-center gap-2">
+            {saving && <LoadingSpinner size={16} />}
+            {saving ? 'Menghantar…' : 'Hantar Laporan'}
           </button>
         </div>
       )}
@@ -192,13 +196,15 @@ export default function ReportForm({ report, wardenName, wardenHostel, dateStr, 
 
       {!isReadOnly && (
         <div className="flex gap-2 mt-5 pt-4 border-t border-paper-line">
-          <button type="button" onClick={() => onSave(collectData(), 'draft')}
-            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
-            Simpan Draf
+          <button type="button" onClick={() => onSave(collectData(), 'draft')} disabled={saving}
+            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper disabled:opacity-60 transition-colors inline-flex items-center justify-center gap-2">
+            {saving && <LoadingSpinner size={16} />}
+            {saving ? 'Menyimpan…' : 'Simpan Draf'}
           </button>
-          <button type="button" onClick={() => onSave(collectData(), 'submitted')}
-            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
-            Hantar Laporan
+          <button type="button" onClick={() => onSave(collectData(), 'submitted')} disabled={saving}
+            className="flex-1 sm:flex-none px-3 py-2.5 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep disabled:opacity-60 transition-colors inline-flex items-center justify-center gap-2">
+            {saving && <LoadingSpinner size={16} />}
+            {saving ? 'Menghantar…' : 'Hantar Laporan'}
           </button>
         </div>
       )}

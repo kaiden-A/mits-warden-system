@@ -5,6 +5,7 @@ import { apiGet, apiPost, apiPatch } from '@/app/lib/api';
 import Stamp from '@/app/components/Stamp';
 import Modal from '@/app/components/Modal';
 import { useToast } from '@/app/components/Toast';
+import LoadingSpinner from '@/app/components/LoadingSpinner';
 import { useRouter } from 'next/navigation';
 
 interface Warden {
@@ -27,6 +28,7 @@ export default function AdminWardensPage() {
   const [newEmail, setNewEmail] = useState('');
   const [newName, setNewName] = useState('');
   const [newHostel, setNewHostel] = useState('Asrama Putera');
+  const [adding, setAdding] = useState(false);
 
   const fetchWardens = () => {
     setLoading(true);
@@ -39,13 +41,22 @@ export default function AdminWardensPage() {
   useEffect(() => { fetchWardens(); }, []);
 
   const handleAdd = async () => {
-    if (!newEmail.trim() || !newName.trim()) {
-      showToast('Emel dan nama diperlukan.');
+    if (!newEmail.trim()) {
+      showToast('Sila isi emel warden.');
       return;
     }
+    if (!newName.trim()) {
+      showToast('Sila isi nama warden.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail.trim())) {
+      showToast('Format emel tidak sah.');
+      return;
+    }
+    setAdding(true);
     try {
       await apiPost('/api/wardens', { email: newEmail, name: newName, hostel: newHostel });
-      showToast(`${newName} ditambah ke senarai.`);
+      showToast(`${newName} berjaya ditambah.`);
       setShowAddModal(false);
       setNewEmail('');
       setNewName('');
@@ -53,6 +64,8 @@ export default function AdminWardensPage() {
       fetchWardens();
     } catch (err: any) {
       showToast(err.message || 'Gagal menambah warden.');
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -78,7 +91,7 @@ export default function AdminWardensPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-12 text-dim-text">Memuatkan…</div>;
+    return <div className="text-center py-12 text-dim-text flex items-center justify-center gap-2"><LoadingSpinner size={18} />Memuatkan…</div>;
   }
 
   return (
@@ -220,9 +233,10 @@ export default function AdminWardensPage() {
             className="px-3 py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
             Batal
           </button>
-          <button type="button" onClick={handleAdd}
-            className="px-3 py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
-            Tambah ke Senarai
+          <button type="button" onClick={handleAdd} disabled={adding}
+            className="px-3 py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep disabled:opacity-60 transition-colors inline-flex items-center gap-2">
+            {adding && <LoadingSpinner size={16} />}
+            {adding ? 'Menambah…' : 'Tambah ke Senarai'}
           </button>
         </div>
       </Modal>

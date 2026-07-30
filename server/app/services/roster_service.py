@@ -1,12 +1,38 @@
+import uuid
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.roster import Roster
+from app.models.roster import Roster, RosterDefault
 from app.models.user import User
 from app.utils.timezone import today_malaysia
+
+_DAY_NAMES = ["Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu", "Ahad"]
+
+
+async def _resolve_warden(
+    db: AsyncSession, warden_id: uuid.UUID | None
+) -> dict | None:
+    if not warden_id:
+        return None
+    user = await db.get(User, warden_id)
+    if not user or user.status != "active":
+        return None
+    return {"id": user.id, "name": user.name}
+
+
+async def _get_defaults_map(db: AsyncSession) -> dict[int, dict]:
+    result = await db.execute(select(RosterDefault))
+    defaults = result.scalars().all()
+    return {
+        d.updated_at.toordinal(): {
+            "putera": await _resolve_warden(db, d.putera_warden_id),
+            "puteri": await _resolve_warden(db, d.puteri_warden_id),
+        }
+        for d in defaults
+    }
 
 
 async def get_weekly_roster(week_start: date, db: AsyncSession) -> list[dict]:
@@ -19,15 +45,24 @@ async def get_weekly_roster(week_start: date, db: AsyncSession) -> list[dict]:
     )
     roster_entries = result.scalars().all()
 
+    default = await db.execute(select(RosterDefault))
+    default_entry = default.scalar_one_or_none()
+
+    default_putera = None
+    default_puteri = None
+    if default_entry:
+        default_putera = await _resolve_warden(db, default_entry.putera_warden_id)
+        default_puteri = await _resolve_warden(db, default_entry.puteri_warden_id)
+
     days_map = {}
     for entry in roster_entries:
-        putera = await db.get(User, entry.putera_warden_id)
-        puteri = await db.get(User, entry.puteri_warden_id)
+        putera = await _resolve_warden(db, entry.putera_warden_id)
+        puteri = await _resolve_warden(db, entry.puteri_warden_id)
         days_map[entry.date.isoformat()] = {
             "date": entry.date,
-            "day": entry.date.strftime("%A"),
-            "putera": {"id": putera.id, "name": putera.name} if putera else None,
-            "puteri": {"id": puteri.id, "name": puteri.name} if puteri else None,
+            "day": _DAY_NAMES[entry.date.weekday()],
+            "putera": putera,
+            "puteri": puteri,
         }
 
     result = []
@@ -39,9 +74,9 @@ async def get_weekly_roster(week_start: date, db: AsyncSession) -> list[dict]:
             result.append(
                 {
                     "date": day_date,
-                    "day": day_date.strftime("%A"),
-                    "putera": None,
-                    "puteri": None,
+                    "day": _DAY_NAMES[day_date.weekday()],
+                    "putera": default_putera,
+                    "puteri": default_puteri,
                 }
             )
 
@@ -56,18 +91,29 @@ async def get_today_roster(db: AsyncSession) -> dict | None:
     )
     roster = result.scalar_one_or_none()
 
-    if not roster:
-        return None
+    if roster:
+        putera = await _resolve_warden(db, roster.putera_warden_id)
+        puteri = await _resolve_warden(db, roster.puteri_warden_id)
+        return {
+            "date": roster.date,
+            "day": _DAY_NAMES[roster.date.weekday()],
+            "putera": putera,
+            "puteri": puteri,
+        }
 
-    putera = await db.get(User, roster.putera_warden_id)
-    puteri = await db.get(User, roster.puteri_warden_id)
+    default = await db.execute(select(RosterDefault))
+    default_entry = default.scalar_one_or_none()
+    if default_entry:
+        putera = await _resolve_warden(db, default_entry.putera_warden_id)
+        puteri = await _resolve_warden(db, default_entry.puteri_warden_id)
+        return {
+            "date": today,
+            "day": _DAY_NAMES[today.weekday()],
+            "putera": putera,
+            "puteri": puteri,
+        }
 
-    return {
-        "date": roster.date,
-        "day": roster.date.strftime("%A"),
-        "putera": {"id": putera.id, "name": putera.name} if putera else None,
-        "puteri": {"id": puteri.id, "name": puteri.name} if puteri else None,
-    }
+    return None
 
 
 async def update_weekly_roster(
@@ -76,26 +122,69 @@ async def update_weekly_roster(
     current_user: User,
     db: AsyncSession,
 ) -> list[dict]:
-    for assignment in assignments:
+    for i, assignment in enumerate(assignments):
+        putera_id = assignment.get("putera_warden_id")
+        puteri_id = assignment.get("puteri_warden_id")
+
+        if not putera_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Warden Asrama Putera untuk hari {_DAY_NAMES[i]} mesti dipilih.",
+            )
+        if not puteri_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Warden Asrama Puteri untuk hari {_DAY_NAMES[i]} mesti dipilih.",
+            )
+
+        putera = await db.get(User, putera_id)
+        if not putera or putera.role != "warden" or putera.status != "active":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Warden Asrama Putera untuk hari {_DAY_NAMES[i]} tidak sah.",
+            )
+        puteri = await db.get(User, puteri_id)
+        if not puteri or puteri.role != "warden" or puteri.status != "active":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Warden Asrama Puteri untuk hari {_DAY_NAMES[i]} tidak sah.",
+            )
+
         existing = await db.execute(
             select(Roster).where(Roster.date == assignment["date"])
         )
         roster_entry = existing.scalar_one_or_none()
 
         if roster_entry:
-            roster_entry.putera_warden_id = assignment["putera_warden_id"]
-            roster_entry.puteri_warden_id = assignment["puteri_warden_id"]
+            roster_entry.putera_warden_id = putera_id
+            roster_entry.puteri_warden_id = puteri_id
             roster_entry.updated_by = current_user.id
             roster_entry.updated_at = datetime.now(timezone.utc)
         else:
             db.add(
                 Roster(
                     date=assignment["date"],
-                    putera_warden_id=assignment["putera_warden_id"],
-                    puteri_warden_id=assignment["puteri_warden_id"],
+                    putera_warden_id=putera_id,
+                    puteri_warden_id=puteri_id,
                     updated_by=current_user.id,
                 )
             )
+
+    default = await db.execute(select(RosterDefault))
+    default_entry = default.scalar_one_or_none()
+    if default_entry:
+        default_entry.putera_warden_id = assignments[0]["putera_warden_id"]
+        default_entry.puteri_warden_id = assignments[0]["puteri_warden_id"]
+        default_entry.updated_by = current_user.id
+        default_entry.updated_at = datetime.now(timezone.utc)
+    else:
+        db.add(
+            RosterDefault(
+                putera_warden_id=assignments[0]["putera_warden_id"],
+                puteri_warden_id=assignments[0]["puteri_warden_id"],
+                updated_by=current_user.id,
+            )
+        )
 
     await db.commit()
 

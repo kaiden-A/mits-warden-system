@@ -5,6 +5,7 @@ import { apiGet, apiPut } from '@/app/lib/api';
 import { iso, mondayOf, addDays, fromISO, fmtShort, malayDay } from '@/app/lib/constants';
 import WeekFlip from '@/app/components/WeekFlip';
 import { useToast } from '@/app/components/Toast';
+import LoadingSpinner from '@/app/components/LoadingSpinner';
 
 interface Warden {
   id: string;
@@ -38,14 +39,15 @@ export default function AdminSchedulePage() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([
+    Promise.allSettled([
       apiGet('/api/roster', { week_start: iso(weekStart) }),
       apiGet('/api/wardens'),
-    ]).then(([r, w]) => {
-      setRoster(r);
-      setWardens(w.wardens || []);
-    }).catch(() => showToast('Gagal memuatkan jadual.'))
-    .finally(() => setLoading(false));
+    ]).then(results => {
+      if (results[0].status === 'fulfilled') setRoster(results[0].value);
+      else showToast('Gagal memuatkan jadual.');
+      if (results[1].status === 'fulfilled') setWardens(results[1].value.wardens || []);
+      else showToast('Gagal memuatkan senarai warden.');
+    }).finally(() => setLoading(false));
   }, [weekStart]);
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -54,17 +56,28 @@ export default function AdminSchedulePage() {
   const puteriWardens = wardens.filter(w => w.status === 'active' && w.hostel === 'Asrama Puteri');
 
   const handleSave = async () => {
+    const assignments = days.map(d => {
+      const ds = iso(d);
+      return {
+        date: ds,
+        putera_warden_id: (document.getElementById(`sched-putera-${ds}`) as HTMLSelectElement)?.value,
+        puteri_warden_id: (document.getElementById(`sched-puteri-${ds}`) as HTMLSelectElement)?.value,
+      };
+    });
+
+    const missingDays = days.filter((_, i) => {
+      const a = assignments[i];
+      return !a.putera_warden_id || !a.puteri_warden_id;
+    });
+
+    if (missingDays.length > 0) {
+      const names = missingDays.map(d => malayDay(d)).join(', ');
+      showToast(`Sila pilih warden untuk kedua-dua asrama pada hari: ${names}.`);
+      return;
+    }
+
     setSaving(true);
     try {
-      const assignments = days.map(d => {
-        const ds = iso(d);
-        return {
-          date: ds,
-          putera_warden_id: (document.getElementById(`sched-putera-${ds}`) as HTMLSelectElement)?.value,
-          puteri_warden_id: (document.getElementById(`sched-puteri-${ds}`) as HTMLSelectElement)?.value,
-        };
-      });
-
       await apiPut('/api/roster', { week_start: iso(weekStart), assignments });
       showToast('Jadual minggu ini disimpan.');
 
@@ -80,7 +93,7 @@ export default function AdminSchedulePage() {
   const getDayRoster = (ds: string) => roster?.days?.find(d => d.date === ds);
 
   if (loading) {
-    return <div className="text-center py-12 text-dim-text">Memuatkan…</div>;
+    return <div className="text-center py-12 text-dim-text flex items-center justify-center gap-2"><LoadingSpinner size={18} />Memuatkan…</div>;
   }
 
   return (
@@ -148,7 +161,8 @@ export default function AdminSchedulePage() {
         </div>
         <div className="flex justify-end gap-2 pt-4 mt-2 border-t border-paper-line">
           <button type="button" onClick={handleSave} disabled={saving}
-            className="px-3 py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
+            className="px-3 py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep disabled:opacity-60 transition-colors inline-flex items-center gap-2">
+            {saving && <LoadingSpinner size={16} />}
             {saving ? 'Menyimpan…' : 'Simpan Jadual'}
           </button>
         </div>

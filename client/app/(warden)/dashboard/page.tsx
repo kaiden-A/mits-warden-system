@@ -38,14 +38,15 @@ export default function WardenDashboardPage() {
   const weekStart = mondayOf(new Date());
 
   useEffect(() => {
-    Promise.all([
+    setLoading(true);
+    Promise.allSettled([
       apiGet('/api/dashboard'),
       apiGet('/api/roster', { week_start: iso(weekStart) }),
-    ]).then(([d, r]) => {
-      setData(d);
-      setRoster(r.days || []);
-    }).catch(() => showToast('Gagal memuatkan dashboard'))
-    .finally(() => setLoading(false));
+    ]).then(results => {
+      if (results[0].status === 'fulfilled') setData(results[0].value);
+      else showToast('Gagal memuatkan dashboard.');
+      if (results[1].status === 'fulfilled') setRoster(results[1].value.days || []);
+    }).finally(() => setLoading(false));
   }, []);
 
   if (loading) {

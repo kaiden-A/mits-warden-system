@@ -5,6 +5,7 @@ import { useAuth } from '@/app/hooks/useAuth';
 import { apiGet, apiPost, apiPatch } from '@/app/lib/api';
 import { iso } from '@/app/lib/constants';
 import { useToast } from '@/app/components/Toast';
+import LoadingSpinner from '@/app/components/LoadingSpinner';
 import ReportForm from '@/app/components/ReportForm';
 import Stamp from '@/app/components/Stamp';
 import { SectionAccordionReadOnly } from '@/app/components/SectionAccordion';
@@ -103,7 +104,7 @@ export default function TodayPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-12 text-dim-text">Memuatkan…</div>;
+    return <div className="text-center py-12 text-dim-text flex items-center justify-center gap-2"><LoadingSpinner size={18} />Memuatkan…</div>;
   }
 
   const dateLabel = fmtLong(new Date());
@@ -143,6 +144,7 @@ export default function TodayPage() {
           scheduledWardenName={null}
           isSubstitution={false}
           isReadOnly={false}
+          saving={saving}
           onSave={handleSave}
         />
       );
@@ -177,8 +179,9 @@ export default function TodayPage() {
                 Sunting Draf
               </button>
               <button type="button" onClick={handleSubmitDraft} disabled={saving}
-                className="w-full sm:w-auto px-4 py-3 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
-                {saving ? '…' : 'Hantar Laporan'}
+                className="w-full sm:w-auto px-4 py-3 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep disabled:opacity-60 transition-colors inline-flex items-center justify-center gap-2">
+                {saving && <LoadingSpinner size={16} />}
+                {saving ? 'Menghantar…' : 'Hantar Laporan'}
               </button>
             </div>
           )}

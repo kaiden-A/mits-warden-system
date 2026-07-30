@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
+import LoadingSpinner from '@/app/components/LoadingSpinner';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -20,7 +21,7 @@ export default function LoginPage() {
       const user = await login(email, password);
       router.replace(user.role === 'admin' ? '/overview' : '/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Log masuk gagal. Sila cuba lagi.');
     } finally {
       setLoading(false);
     }
@@ -61,7 +62,8 @@ export default function LoginPage() {
           )}
 
           <button type="submit" disabled={loading}
-            className="w-full py-2.5 px-4 bg-ink text-paper rounded-md text-sm font-semibold tracking-wide transition-colors hover:bg-ink-soft disabled:opacity-60">
+            className="w-full py-2.5 px-4 bg-ink text-paper rounded-md text-sm font-semibold tracking-wide transition-colors hover:bg-ink-soft disabled:opacity-60 inline-flex items-center justify-center gap-2">
+            {loading && <LoadingSpinner size={16} />}
             {loading ? 'Memproses…' : 'Daftar Masuk'}
           </button>
         </form>

@@ -39,7 +39,7 @@ async def get_today_roster(
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No roster entry for today",
+            detail="Tiada jadual warden untuk hari ini.",
         )
     return TodayRoster(**result)
 
