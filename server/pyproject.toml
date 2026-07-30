@@ -3,7 +3,7 @@ name = "server"
 version = "0.1.0"
 description = "Log Tugas - Warden Duty Report System"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.115.0",
     "uvicorn[standard]>=0.34.0",

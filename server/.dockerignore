@@ -10,5 +10,5 @@ __pycache__/
 uvicorn_err.txt
 uvicorn_out.txt
 design.md
-README.md
+!README.md
 alembic/versions/__pycache__/
