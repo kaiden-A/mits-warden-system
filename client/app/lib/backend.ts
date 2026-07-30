@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+const BACKEND = process.env.BACKEND_URL || 'http://localhost:8000';
 
 export async function proxy(method: string, path: string, body?: unknown) {
   const cookieStore = await cookies();
