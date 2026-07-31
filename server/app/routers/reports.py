@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -20,37 +20,6 @@ from app.schemas.report import (
 from app.services import report_service
 
 router = APIRouter(prefix="/reports", tags=["reports"])
-
-SECTION_ITEM_KEYS = {
-    "rutinAktivitiMurid": [
-        "halaqahQuran", "rollCall", "riadhah", "muraqabah", "prep",
-        "tabassam", "melawat", "gotongRoyong", "tidur",
-    ],
-    "tarbiyyahRohaniyyah": [
-        "qiamullail", "kuliahSubuh", "subuh", "zohor", "asar",
-        "azkarMaghrib", "kuliahMaghrib", "isya", "usrahMurid", "bacaanAlMulk",
-    ],
-    "kebersihanArasBawah": [
-        "lobi", "musolla", "storSukan", "storKebersihan", "bilikDobi",
-        "bilikIsolasi", "bilikICT", "tandas", "ampaiBaju",
-    ],
-    "kebersihanAras1": [
-        "bilikDorm", "koridor", "bilikPantri", "tandas", "bilikPrep",
-        "bilikIron", "bilikRekreasi",
-    ],
-    "kebersihanAras2": [
-        "bilikDorm", "koridor", "bilikPantri", "tandas", "bilikPrep",
-        "bilikIron", "bilikRekreasi",
-    ],
-    "kebersihanAras3": [
-        "bilikDorm", "koridor", "bilikPantri", "tandas", "bilikPrep",
-        "bilikIron", "bilikRekreasi",
-    ],
-    "dewanMakan": [
-        "sarapan", "minumPagi", "makanTengahari", "minumPetang",
-        "makanMalam", "minumMalam",
-    ],
-}
 
 
 def _build_ratings_map(ratings: list[ReportRating]) -> dict:
@@ -136,6 +105,22 @@ async def list_reports(
     result = await db.execute(query)
     reports = result.scalars().all()
 
+    rated_section_counts: dict = {}
+    if reports:
+        counts_result = await db.execute(
+            select(
+                ReportRating.report_id,
+                func.count(func.distinct(ReportRating.section_id)),
+            )
+            .where(
+                ReportRating.report_id.in_([r.id for r in reports]),
+                ReportRating.rating.isnot(None),
+                ReportRating.rating != "",
+            )
+            .group_by(ReportRating.report_id)
+        )
+        rated_section_counts = dict(counts_result.all())
+
     items = []
     for report in reports:
         submitter = await db.get(User, report.submitted_by)
@@ -151,6 +136,16 @@ async def list_reports(
                 is_substitution=report.is_substitution,
                 inspection_time=report.inspection_time,
                 submitted_at=report.submitted_at,
+                aduan_kerosakan=report.aduan_kerosakan or "TKD",
+                murid_sakit=report.murid_sakit or "TLB",
+                rated_sections=min(
+                    rated_section_counts.get(report.id, 0)
+                    + bool(report.aduan_kerosakan)
+                    + bool(report.murid_sakit)
+                    + (report.kawalan_keselamatan is not None)
+                    + bool(report.catatan_tambahan),
+                    11,
+                ),
             )
         )
 

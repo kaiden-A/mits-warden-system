@@ -111,6 +111,9 @@ class ReportListItem(BaseModel):
     is_substitution: bool = False
     inspection_time: time | None = None
     submitted_at: datetime | None = None
+    aduan_kerosakan: str = "TKD"
+    murid_sakit: str = "TLB"
+    rated_sections: int = 0
 
     model_config = {"from_attributes": True}
 

@@ -23,24 +23,25 @@ async def get_warden_dashboard(
 
     total_result = await db.execute(
         select(func.count(Report.id)).where(
-            Report.submitted_by == current_user.id
+            Report.hostel == current_user.hostel,
+            Report.status != "draft",
         )
     )
     stats["total_reports"] = total_result.scalar() or 0
 
     week_result = await db.execute(
         select(func.count(Report.id)).where(
-            Report.submitted_by == current_user.id,
+            Report.hostel == current_user.hostel,
             Report.date >= week_start,
             Report.date <= today,
-            Report.status == "submitted",
+            Report.status != "draft",
         )
     )
     stats["submitted_this_week"] = week_result.scalar() or 0
 
     reviewed_result = await db.execute(
         select(func.count(Report.id)).where(
-            Report.submitted_by == current_user.id,
+            Report.hostel == current_user.hostel,
             Report.status == "reviewed",
         )
     )

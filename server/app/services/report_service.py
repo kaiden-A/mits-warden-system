@@ -9,6 +9,51 @@ from app.models.roster import Roster
 from app.models.user import User
 from app.services.email_service import notify_substitution
 
+SECTION_ITEM_KEYS = {
+    "rutinAktivitiMurid": [
+        "halaqahQuran", "rollCall", "riadhah", "muraqabah", "prep",
+        "tabassam", "melawat", "gotongRoyong", "tidur",
+    ],
+    "tarbiyyahRohaniyyah": [
+        "qiamullail", "kuliahSubuh", "subuh", "zohor", "asar",
+        "azkarMaghrib", "kuliahMaghrib", "isya", "usrahMurid", "bacaanAlMulk",
+    ],
+    "kebersihanArasBawah": [
+        "lobi", "musolla", "storSukan", "storKebersihan", "bilikDobi",
+        "bilikIsolasi", "bilikICT", "tandas", "ampaiBaju",
+    ],
+    "kebersihanAras1": [
+        "bilikDorm", "koridor", "bilikPantri", "tandas", "bilikPrep",
+        "bilikIron", "bilikRekreasi",
+    ],
+    "kebersihanAras2": [
+        "bilikDorm", "koridor", "bilikPantri", "tandas", "bilikPrep",
+        "bilikIron", "bilikRekreasi",
+    ],
+    "kebersihanAras3": [
+        "bilikDorm", "koridor", "bilikPantri", "tandas", "bilikPrep",
+        "bilikIron", "bilikRekreasi",
+    ],
+    "dewanMakan": [
+        "sarapan", "minumPagi", "makanTengahari", "minumPetang",
+        "makanMalam", "minumMalam",
+    ],
+}
+
+
+def _ratings_complete(ratings: dict | None) -> bool:
+    if not ratings:
+        return False
+    return all(bool(ratings.get(sid)) for sid in SECTION_ITEM_KEYS)
+
+
+def _validate_complete(ratings: dict | None, kawalan_keselamatan) -> None:
+    if not _ratings_complete(ratings) or kawalan_keselamatan is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Laporan tidak lengkap. Sila lengkapkan semua bahagian sebelum menghantar.",
+        )
+
 
 async def create_report(
     report_data: dict,
@@ -69,6 +114,7 @@ async def create_report(
     )
 
     if report.status == "submitted":
+        _validate_complete(ratings_data, report.kawalan_keselamatan)
         now = datetime.now(timezone.utc)
         report.submitted_at = now
 
@@ -225,6 +271,17 @@ async def submit_report(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Hanya laporan draf boleh dihantar.",
         )
+
+    rating_rows = (
+        await db.execute(
+            select(ReportRating).where(ReportRating.report_id == report.id)
+        )
+    ).scalars().all()
+    ratings_map: dict = {}
+    for rr in rating_rows:
+        if rr.rating:
+            ratings_map.setdefault(rr.section_id, {})[rr.item_key] = rr.rating
+    _validate_complete(ratings_map, report.kawalan_keselamatan)
 
     report.status = "submitted"
     report.submitted_at = datetime.now(timezone.utc)
