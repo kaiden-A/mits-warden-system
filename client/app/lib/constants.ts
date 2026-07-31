@@ -18,6 +18,20 @@ export const ARAS_SHARED = [
   { key: 'bilikRekreasi', label: 'Bilik Rekreasi' },
 ];
 
+export interface SectionItem {
+  key: string;
+  label: string;
+  days?: number[];
+}
+
+export function itemApplicable(item: SectionItem, date: Date): boolean {
+  return !item.days || item.days.includes(date.getDay());
+}
+
+export function itemsForDate(items: SectionItem[], date: Date): SectionItem[] {
+  return items.filter(item => itemApplicable(item, date));
+}
+
 export const SECTIONS_CONFIG = [
   {
     id: 'rutinAktivitiMurid', title: '1. Rutin Aktiviti Murid',
@@ -27,7 +41,7 @@ export const SECTIONS_CONFIG = [
       { key: 'riadhah', label: 'Riadhah' },
       { key: 'muraqabah', label: 'Muraqabah' },
       { key: 'prep', label: 'Prep / Kelas Tambahan (Malam)' },
-      { key: 'tabassam', label: 'Tabassam / Prep (Sabtu & Ahad)' },
+      { key: 'tabassam', label: 'Tabassam / Prep (Sabtu & Ahad)', days: [0, 6] },
       { key: 'melawat', label: 'Melawat / Keluar Bandar' },
       { key: 'gotongRoyong', label: 'Gotong-Royong' },
       { key: 'tidur', label: 'Tidur' },
@@ -36,15 +50,15 @@ export const SECTIONS_CONFIG = [
   {
     id: 'tarbiyyahRohaniyyah', title: '2. Tarbiyyah / Rohaniyyah',
     items: [
-      { key: 'qiamullail', label: 'Qiamullail Jamaie (Ahad)' },
-      { key: 'kuliahSubuh', label: 'Kuliah Subuh (Sabtu & Ahad)' },
+      { key: 'qiamullail', label: 'Qiamullail Jamaie (Ahad)', days: [0] },
+      { key: 'kuliahSubuh', label: 'Kuliah Subuh (Sabtu & Ahad)', days: [0, 6] },
       { key: 'subuh', label: 'Subuh / Azkar' },
-      { key: 'zohor', label: 'Zohor (Sabtu & Ahad)' },
+      { key: 'zohor', label: 'Zohor (Sabtu & Ahad)', days: [0, 6] },
       { key: 'asar', label: 'Asar' },
       { key: 'azkarMaghrib', label: 'Azkar / Maghrib' },
-      { key: 'kuliahMaghrib', label: 'Kuliah Maghrib (Sabtu & Ahad)' },
+      { key: 'kuliahMaghrib', label: 'Kuliah Maghrib (Sabtu & Ahad)', days: [0, 6] },
       { key: 'isya', label: "Isya'" },
-      { key: 'usrahMurid', label: 'Usrah Murid (Sabtu & Ahad)' },
+      { key: 'usrahMurid', label: 'Usrah Murid (Sabtu & Ahad)', days: [0, 6] },
       { key: 'bacaanAlMulk', label: 'Bacaan Surah Al-Mulk' },
     ],
   },
@@ -69,7 +83,7 @@ export const SECTIONS_CONFIG = [
     id: 'dewanMakan', title: '7. Dewan Makan',
     items: [
       { key: 'sarapan', label: 'Sarapan' },
-      { key: 'minumPagi', label: 'Minum Pagi (Sabtu & Ahad)' },
+      { key: 'minumPagi', label: 'Minum Pagi (Sabtu & Ahad)', days: [0, 6] },
       { key: 'makanTengahari', label: 'Makan Tengahari' },
       { key: 'minumPetang', label: 'Minum Petang' },
       { key: 'makanMalam', label: 'Makan Malam' },
@@ -127,7 +141,7 @@ export function mondayOf(d: Date): Date {
 }
 
 export function fmtShort(d: Date): string {
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 }
 
 export function fmtLong(d: Date): string {
@@ -143,19 +157,35 @@ export function fmtDatetime(isoStr: string | null | undefined): string {
     String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
+export function fmtTime(isoStr: string | null | undefined): string {
+  if (!isoStr) return '—';
+  const d = new Date(isoStr);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
 export function malayDay(d: Date): string {
   return MALAY_DAYS[d.getDay()];
 }
 
 export function countRatedSections(report: Record<string, unknown>): number {
+  const ratings = (report.ratings ?? report) as Record<string, unknown>;
   let count = 0;
   ALL_SECTION_IDS.forEach(sid => {
-    const sec = report[sid] as Record<string, string> | undefined;
+    const sec = ratings[sid] as Record<string, string> | undefined;
     if (sec && Object.values(sec).some(v => v !== '' && v != null)) count++;
   });
-  if (report.aduanKerosakan && String(report.aduanKerosakan).trim()) count++;
-  if (report.muridSakit && String(report.muridSakit).trim()) count++;
-  if (report.kawalanKeselamatan && String(report.kawalanKeselamatan).trim()) count++;
-  if (report.catatanTambahan && String(report.catatanTambahan).trim()) count++;
+  if (report.aduan_kerosakan && String(report.aduan_kerosakan).trim()) count++;
+  if (report.murid_sakit && String(report.murid_sakit).trim()) count++;
+  if (report.kawalan_keselamatan && String(report.kawalan_keselamatan).trim()) count++;
+  if (report.catatan_tambahan && String(report.catatan_tambahan).trim()) count++;
   return Math.min(count, 11);
+}
+
+export function isReportComplete(report: Record<string, unknown>): boolean {
+  const ratings = (report.ratings ?? report) as Record<string, unknown>;
+  const allSectionsRated = SECTIONS_CONFIG.every(cfg => {
+    const sec = ratings[cfg.id] as Record<string, string> | undefined;
+    return !!sec && Object.values(sec).some(v => v !== '' && v != null);
+  });
+  return allSectionsRated && !!report.kawalan_keselamatan;
 }

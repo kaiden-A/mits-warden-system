@@ -109,7 +109,7 @@ export default function WardenDashboardPage() {
                 Laporan Hari Ini {reportStatus === 'draft' ? '(Draf)' : 'Telah Direkodkan'}
               </h3>
               <p className="text-xs sm:text-sm text-dim-text truncate">
-                <Stamp status={reportStatus} /> {reportStatus !== 'draft' ? 'Dihantar' : ''}
+                <Stamp status={reportStatus} />
               </p>
             </div>
             <button type="button" onClick={() => router.push('/today')}
@@ -144,7 +144,7 @@ export default function WardenDashboardPage() {
               return (
                 <div key={ds} className="p-2.5 bg-paper rounded">
                   <div className="font-heading font-semibold text-sm text-ink-text mb-1">
-                    {malayDay(d)}, {d.getDate()} {fmtShort(d)}
+                    {malayDay(d)}, {fmtShort(d)}
                   </div>
                   {HOSTELS.map(hostel => {
                     const wn = dutyWardenName(hostel, dayRoster);

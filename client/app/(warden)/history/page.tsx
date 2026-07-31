@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { apiGet } from '@/app/lib/api';
-import { iso, mondayOf, addDays, fromISO, fmtShort, malayDay, fmtLong, SECTIONS_CONFIG, countRatedSections } from '@/app/lib/constants';
+import { iso, mondayOf, addDays, fromISO, fmtShort, malayDay, fmtLong, fmtTime, SECTIONS_CONFIG } from '@/app/lib/constants';
 import Stamp from '@/app/components/Stamp';
 import WeekFlip from '@/app/components/WeekFlip';
 import Modal from '@/app/components/Modal';
@@ -100,7 +100,7 @@ export default function HistoryPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-ink-text truncate">
-                  {countRatedSections(r)}/11 bhgn · {r.inspection_time || '—'}
+                  {r.rated_sections}/11 bhgn · {r.status !== 'draft' ? fmtTime(r.submitted_at) : (r.inspection_time || '—')}
                   {r.is_substitution && r.duty_warden_name && (
                     <span className="text-[0.58rem] font-semibold uppercase tracking-wider px-1 py-0.5 border border-brass text-brass-deep bg-brass-wash rounded-sm whitespace-nowrap ml-1 inline-block">
                       bg {r.duty_warden_name}
@@ -148,7 +148,7 @@ export default function HistoryPage() {
 
             <div className="mt-3">
               {SECTIONS_CONFIG.map(cfg => (
-                <SectionAccordionReadOnly key={cfg.id} section={cfg} data={detailReport.ratings?.[cfg.id]} />
+                <SectionAccordionReadOnly key={cfg.id} section={cfg} data={detailReport.ratings?.[cfg.id]} date={detailReport.date} />
               ))}
             </div>
 

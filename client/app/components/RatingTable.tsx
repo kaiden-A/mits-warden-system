@@ -1,8 +1,10 @@
+import { fromISO } from '@/app/lib/constants';
 import RatingBadge from './RatingBadge';
 
 interface Item {
   key: string;
   label: string;
+  days?: number[];
 }
 
 export function RatingTableEditable({ items, data, onRatingChange }: {
@@ -42,10 +44,12 @@ export function RatingTableEditable({ items, data, onRatingChange }: {
   );
 }
 
-export function RatingTableReadOnly({ items, data }: {
+export function RatingTableReadOnly({ items, data, date }: {
   items: Item[];
   data?: Record<string, string>;
+  date?: string;
 }) {
+  const reportDate = date ? fromISO(date) : null;
   return (
     <table className="w-full border-collapse">
       <thead>
@@ -58,7 +62,9 @@ export function RatingTableReadOnly({ items, data }: {
         {items.map(item => (
           <tr key={item.key}>
             <td className="py-1.5 pl-1.5 pr-2 border-b border-paper-line text-sm">{item.label}</td>
-            <td className="py-1.5 pr-1.5 border-b border-paper-line"><RatingBadge value={data?.[item.key]} /></td>
+            <td className="py-1.5 pr-1.5 border-b border-paper-line">
+              <RatingBadge value={data?.[item.key] || (reportDate && item.days && !item.days.includes(reportDate.getDay()) ? 'NA' : undefined)} />
+            </td>
           </tr>
         ))}
       </tbody>

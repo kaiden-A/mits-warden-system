@@ -9,7 +9,7 @@ import LoadingSpinner from '@/app/components/LoadingSpinner';
 import ReportForm from '@/app/components/ReportForm';
 import Stamp from '@/app/components/Stamp';
 import { SectionAccordionReadOnly } from '@/app/components/SectionAccordion';
-import { SECTIONS_CONFIG, fmtLong, fromISO, countRatedSections, statusLabel } from '@/app/lib/constants';
+import { SECTIONS_CONFIG, fmtLong, fromISO, countRatedSections, fmtTime, isReportComplete } from '@/app/lib/constants';
 import ApprovalTrail from '@/app/components/ApprovalTrail';
 import Modal from '@/app/components/Modal';
 
@@ -46,13 +46,19 @@ export default function TodayPage() {
     try {
       const isSubmitting = status === 'submitted';
 
+      if (isSubmitting && !isReportComplete(data)) {
+        showToast('Sila lengkapkan semua bahagian sebelum menghantar.');
+        setSaving(false);
+        return;
+      }
+
       if (reportId && report?.status === 'draft') {
         const updated = await apiPatch(`/api/reports/${reportId}`, data);
         setReport(updated);
         setReportId(updated.id);
         if (isSubmitting) {
-          await apiPost(`/api/reports/${updated.id}/submit`);
-          setReport({ ...updated, status: 'submitted' });
+          const submitted = await apiPost(`/api/reports/${updated.id}/submit`);
+          setReport(submitted);
         }
       } else if (reportId && report?.status === 'submitted') {
         showToast('Laporan sudah dihantar.');
@@ -64,8 +70,8 @@ export default function TodayPage() {
         setReport(created);
         setReportId(created.id);
         if (isSubmitting) {
-          await apiPost(`/api/reports/${created.id}/submit`);
-          setReport({ ...created, status: 'submitted' });
+          const submitted = await apiPost(`/api/reports/${created.id}/submit`);
+          setReport(submitted);
         }
       }
 
@@ -87,6 +93,10 @@ export default function TodayPage() {
 
   const handleSubmitDraft = async () => {
     if (!reportId) return;
+    if (!isReportComplete(report)) {
+      showToast('Sila lengkapkan semua bahagian sebelum menghantar.');
+      return;
+    }
     setSaving(true);
     try {
       await apiPost(`/api/reports/${reportId}/submit`);
@@ -170,7 +180,7 @@ export default function TodayPage() {
           <h3 className="font-heading font-semibold text-base sm:text-lg">Laporan telah direkodkan</h3>
           <div className="text-sm text-dim-text mt-1 mb-3">
             {countRatedSections(report)}/11 bahagian dinilai
-            · {report.inspection_time || '—'}
+            · {!isDraft ? fmtTime(report.submitted_at) : (report.inspection_time || '—')}
           </div>
           {isDraft && (
             <div className="flex flex-col sm:flex-row justify-center gap-2 mt-4">
@@ -206,7 +216,7 @@ export default function TodayPage() {
                   className="text-dim-text hover:text-ink-text text-xl leading-none p-0.5">&times;</button>
               </div>
               <p className="text-sm text-dim-text mb-1">
-                {detailReport.submitted_by?.name || user?.name} · {detailReport.hostel} · Masa: {detailReport.inspection_time || '—'}
+                {detailReport.submitted_by?.name || user?.name} · {detailReport.hostel} 
               </p>
               <div className="inline-block mb-3">
                 <Stamp status={detailReport.status} />
@@ -226,6 +236,7 @@ export default function TodayPage() {
                     key={cfg.id}
                     section={cfg}
                     data={detailReport.ratings?.[cfg.id]}
+                    date={detailReport.date}
                   />
                 ))}
               </div>

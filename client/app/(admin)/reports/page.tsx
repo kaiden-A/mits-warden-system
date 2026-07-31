@@ -159,7 +159,7 @@ export default function AdminReportsPage() {
                                 <div key={cfg.id} className="sm:col-span-2">
                                   <h5 className="font-heading font-semibold text-sm mb-1 text-ink-text">{cfg.title}</h5>
                                   <div className="table-scroll">
-                                    <RatingTableReadOnly items={cfg.items} data={detail.ratings?.[cfg.id]} />
+                                    <RatingTableReadOnly items={cfg.items} data={detail.ratings?.[cfg.id]} date={detail.date} />
                                   </div>
                                 </div>
                               ))}

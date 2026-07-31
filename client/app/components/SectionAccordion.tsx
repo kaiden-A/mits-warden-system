@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SECTIONS_CONFIG } from '@/app/lib/constants';
+import { SECTIONS_CONFIG, fromISO, itemsForDate } from '@/app/lib/constants';
 import { RatingTableEditable, RatingTableReadOnly } from './RatingTable';
 
 interface SectionConfig {
@@ -9,15 +9,17 @@ interface SectionConfig {
   title: string;
 }
 
-export function SectionAccordionEditable({ section, data, onRatingChange, defaultOpen }: {
+export function SectionAccordionEditable({ section, data, onRatingChange, defaultOpen, date }: {
   section: SectionConfig;
   data?: Record<string, string>;
   onRatingChange: (key: string, value: string) => void;
   defaultOpen?: boolean;
+  date?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen || false);
   const config = SECTIONS_CONFIG.find(s => s.id === section.id);
   if (!config) return null;
+  const items = date ? itemsForDate(config.items, fromISO(date)) : config.items;
 
   return (
     <div>
@@ -28,16 +30,17 @@ export function SectionAccordionEditable({ section, data, onRatingChange, defaul
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-[2500px]' : 'max-h-0'}`}>
         <div className="py-2.5">
-          <RatingTableEditable items={config.items} data={data} onRatingChange={onRatingChange} />
+          <RatingTableEditable items={items} data={data} onRatingChange={onRatingChange} />
         </div>
       </div>
     </div>
   );
 }
 
-export function SectionAccordionReadOnly({ section, data }: {
+export function SectionAccordionReadOnly({ section, data, date }: {
   section: SectionConfig;
   data?: Record<string, string>;
+  date?: string;
 }) {
   const [open, setOpen] = useState(false);
   const config = SECTIONS_CONFIG.find(s => s.id === section.id);
@@ -52,7 +55,7 @@ export function SectionAccordionReadOnly({ section, data }: {
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-[2500px]' : 'max-h-0'}`}>
         <div className="py-2.5">
-          <RatingTableReadOnly items={config.items} data={data} />
+          <RatingTableReadOnly items={config.items} data={data} date={date} />
         </div>
       </div>
     </div>

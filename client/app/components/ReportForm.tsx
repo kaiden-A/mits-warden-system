@@ -46,6 +46,10 @@ export default function ReportForm({ report, wardenName, wardenHostel, dateStr, 
     SECTIONS_CONFIG.forEach(cfg => {
       const sectionRatings: Record<string, string> = {};
       cfg.items.forEach(item => {
+        if (item.days && !item.days.includes(dateObj.getDay())) {
+          sectionRatings[item.key] = 'NA';
+          return;
+        }
         const val = ratings[cfg.id]?.[item.key];
         if (val) sectionRatings[item.key] = val;
       });
@@ -136,6 +140,7 @@ export default function ReportForm({ report, wardenName, wardenHostel, dateStr, 
             data={ratings[cfg.id]}
             onRatingChange={(key, val) => handleRatingChange(cfg.id, key, val)}
             defaultOpen={i === 0 || i === 1}
+            date={dateStr}
           />
         ))}
 
