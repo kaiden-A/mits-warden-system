@@ -52,6 +52,13 @@ select {
   -webkit-appearance: auto;
 }
 
+/* Rating toggle selected states (class names are built dynamically, so they live here) */
+.rating-1 { background: var(--color-red-wash); color: var(--color-red); }
+.rating-2 { background: var(--color-brass-wash); color: var(--color-brass-deep); }
+.rating-3 { background: var(--color-green-wash); color: var(--color-green); }
+.rating-4 { background: var(--color-brass); color: #fff; }
+.rating-na { background: #EDEAE0; color: var(--color-dim-text); }
+
 /* Responsive table helper: hide specific columns on mobile */
 @media (max-width: 767px) {
   .mobile-hidden { display: none !important; }
