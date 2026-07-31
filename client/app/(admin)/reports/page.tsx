@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiGet, apiPost } from '@/app/lib/api';
-import { iso, mondayOf, addDays, fromISO, malayDay, fmtShort, SECTIONS_CONFIG } from '@/app/lib/constants';
+import { iso, mondayOf, addDays, fromISO, malayDay, fmtShort, fmtTime, SECTIONS_CONFIG } from '@/app/lib/constants';
 import Stamp from '@/app/components/Stamp';
 import WeekFlip from '@/app/components/WeekFlip';
 import { RatingTableReadOnly } from '@/app/components/RatingTable';
@@ -140,7 +140,7 @@ export default function AdminReportsPage() {
                             <span className="text-dim-text font-normal"> ({report.hostel})</span>
                           </div>
                           <div className="text-[0.68rem] text-dim-text font-mono mt-0.5">
-                            {report.inspection_time || '—'}
+                            {report.status !== 'draft' ? fmtTime(report.submitted_at) : (report.inspection_time || '—')}
                             {report.is_substitution && report.duty_warden_name && (
                               <span className="ml-1.5 text-[0.58rem] font-semibold uppercase tracking-wider px-1 py-0.5 border border-brass text-brass-deep bg-brass-wash rounded-sm whitespace-nowrap inline-block">
                                 bg pihak {report.duty_warden_name}

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/app/hooks/useAuth';
 import { apiGet } from '@/app/lib/api';
-import { fmtShort, fromISO, statusLabel, statusColor } from '@/app/lib/constants';
+import { fmtShort, fmtTime, fromISO, statusLabel, statusColor } from '@/app/lib/constants';
 import Stamp from '@/app/components/Stamp';
 import { useToast } from '@/app/components/Toast';
 
@@ -21,6 +21,7 @@ interface AdminDashboard {
     warden_name: string;
     status: string;
     inspection_time: string | null;
+    submitted_at: string | null;
   }[];
 }
 
@@ -102,7 +103,7 @@ export default function AdminOverviewPage() {
                   <span className="material-symbols-outlined text-sm" style={{ color: '#7A7261' }}>
                     {entry.status === 'flagged' ? 'flag' : entry.status === 'reviewed' ? 'check_circle' : entry.status === 'submitted' ? 'send' : 'edit_note'}
                   </span>
-                  {entry.inspection_time || '—'}
+                  {entry.status !== 'draft' ? fmtTime(entry.submitted_at) : (entry.inspection_time || '—')}
                 </span>
               </div>
               <span className="hidden sm:inline ml-auto"><Stamp status={entry.status} /></span>
