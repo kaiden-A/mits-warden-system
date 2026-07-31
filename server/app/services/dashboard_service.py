@@ -181,6 +181,7 @@ async def get_admin_dashboard(
                 "inspection_time": str(r.inspection_time)
                 if r.inspection_time
                 else None,
+                "submitted_at": r.submitted_at,
             }
         )
 

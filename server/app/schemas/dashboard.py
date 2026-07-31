@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -69,6 +69,7 @@ class RecentEntry(BaseModel):
     warden_name: str
     status: str
     inspection_time: str | None = None
+    submitted_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
