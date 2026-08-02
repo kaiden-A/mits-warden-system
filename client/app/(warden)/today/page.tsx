@@ -1,19 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useAuth } from '@/app/hooks/useAuth';
 import { apiGet, apiPost, apiPatch } from '@/app/lib/api';
-import { iso } from '@/app/lib/constants';
+import { iso, fromISO } from '@/app/lib/constants';
 import { useToast } from '@/app/components/Toast';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
 import ReportForm from '@/app/components/ReportForm';
 import Stamp from '@/app/components/Stamp';
 import { SectionAccordionReadOnly } from '@/app/components/SectionAccordion';
-import { SECTIONS_CONFIG, fmtLong, fromISO, countRatedSections, fmtTime, isReportComplete } from '@/app/lib/constants';
+import { SECTIONS_CONFIG, fmtLong, countRatedSections, fmtTime, isReportComplete } from '@/app/lib/constants';
 import ApprovalTrail from '@/app/components/ApprovalTrail';
 import Modal from '@/app/components/Modal';
 
-export default function TodayPage() {
+export default function TodayPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [report, setReport] = useState<any>(null);
@@ -24,10 +24,14 @@ export default function TodayPage() {
   const [detailReport, setDetailReport] = useState<any>(null);
   const [showDetail, setShowDetail] = useState(false);
 
-  const todayStr = iso(new Date());
+  const sp = use(searchParams);
+  const paramDate = typeof sp.date === 'string' ? sp.date : null;
+  const targetDate = paramDate && /^\d{4}-\d{2}-\d{2}$/.test(paramDate) ? paramDate : iso(new Date());
+  const todayStr = targetDate;
 
   useEffect(() => {
-    const todayWeekStart = iso(new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - new Date().getDay() + 1));
+    const target = fromISO(todayStr);
+    const todayWeekStart = iso(new Date(target.getFullYear(), target.getMonth(), target.getDate() - target.getDay() + 1));
     apiGet('/api/reports', { week_start: todayWeekStart })
       .then((reports: any[]) => {
         const todayReport = reports.find((r: any) => r.date === todayStr);
@@ -39,7 +43,7 @@ export default function TodayPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [todayStr]);
 
   const handleSave = async (data: any, status: string) => {
     setSaving(true);
@@ -117,7 +121,7 @@ export default function TodayPage() {
     return <div className="text-center py-12 text-dim-text flex items-center justify-center gap-2"><LoadingSpinner size={18} />Memuatkan…</div>;
   }
 
-  const dateLabel = fmtLong(new Date());
+  const dateLabel = fmtLong(fromISO(todayStr));
 
   if (showForm || (!report && !showForm)) {
     if (!showForm && !report) {

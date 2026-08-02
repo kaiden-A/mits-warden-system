@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -8,6 +8,7 @@ from app.models.report import ApprovalLog, Report, ReportRating
 from app.models.user import User
 from app.services.email_service import notify_substitution
 from app.services.roster_service import get_roster_for_date
+from app.utils.timezone import MALAYSIA_TZ
 
 SECTION_ITEM_KEYS = {
     "rutinAktivitiMurid": [
@@ -47,6 +48,13 @@ def _ratings_complete(ratings: dict | None) -> bool:
     return all(bool(ratings.get(sid)) for sid in SECTION_ITEM_KEYS)
 
 
+def _is_late(report_date: date, submitted_at: datetime) -> bool:
+    deadline = datetime.combine(
+        report_date + timedelta(days=1), time.min, tzinfo=MALAYSIA_TZ
+    )
+    return submitted_at > deadline
+
+
 def _validate_complete(ratings: dict | None, kawalan_keselamatan) -> None:
     if not _ratings_complete(ratings) or kawalan_keselamatan is None:
         raise HTTPException(
@@ -68,6 +76,14 @@ async def create_report(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Pentadbir tidak boleh mencipta laporan.",
+        )
+
+    from app.utils.timezone import today_malaysia
+
+    if report_date > today_malaysia():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tarikh laporan tidak boleh pada masa hadapan.",
         )
 
     existing = await db.execute(
@@ -114,6 +130,7 @@ async def create_report(
         _validate_complete(ratings_data, report.kawalan_keselamatan)
         now = datetime.now(timezone.utc)
         report.submitted_at = now
+        report.is_late = _is_late(report.date, now)
 
     db.add(report)
     await db.flush()
@@ -280,8 +297,10 @@ async def submit_report(
             ratings_map.setdefault(rr.section_id, {})[rr.item_key] = rr.rating
     _validate_complete(ratings_map, report.kawalan_keselamatan)
 
+    now = datetime.now(timezone.utc)
     report.status = "submitted"
-    report.submitted_at = datetime.now(timezone.utc)
+    report.submitted_at = now
+    report.is_late = _is_late(report.date, now)
 
     db.add(
         ApprovalLog(

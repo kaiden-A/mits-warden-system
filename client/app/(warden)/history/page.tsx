@@ -83,7 +83,7 @@ export default function HistoryPage() {
                   <div className="text-sm text-dim-text italic">{isFuture ? 'Belum sampai masa' : 'Tiada laporan'}</div>
                 </div>
                 {!isFuture && (
-                  <button type="button" onClick={() => router.push('/today')}
+                  <button type="button" onClick={() => router.push(`/today?date=${ds}`)}
                     className="px-3 py-2 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors flex-shrink-0">
                     Tambah Entri
                   </button>
@@ -104,6 +104,11 @@ export default function HistoryPage() {
                   {r.is_substitution && r.duty_warden_name && (
                     <span className="text-[0.58rem] font-semibold uppercase tracking-wider px-1 py-0.5 border border-brass text-brass-deep bg-brass-wash rounded-sm whitespace-nowrap ml-1 inline-block">
                       bg {r.duty_warden_name}
+                    </span>
+                  )}
+                  {r.is_late && r.status !== 'draft' && (
+                    <span className="text-[0.58rem] font-semibold uppercase tracking-wider px-1 py-0.5 border border-red text-red bg-red-wash rounded-sm whitespace-nowrap ml-1 inline-block">
+                      Terlewat
                     </span>
                   )}
                 </div>
@@ -134,8 +139,13 @@ export default function HistoryPage() {
             <p className="text-sm text-dim-text mb-1">
               {detailReport.submitted_by?.name || user?.name} · {detailReport.hostel} · Masa: {detailReport.inspection_time || '—'}
             </p>
-            <div className="inline-block mb-3">
+            <div className="inline-flex items-center gap-2 mb-3">
               <Stamp status={detailReport.status} />
+              {detailReport.is_late && detailReport.status !== 'draft' && (
+                <span className="text-[0.58rem] font-semibold uppercase tracking-wider px-1 py-0.5 border border-red text-red bg-red-wash rounded-sm whitespace-nowrap inline-block">
+                  Terlewat
+                </span>
+              )}
             </div>
 
             <ApprovalTrail

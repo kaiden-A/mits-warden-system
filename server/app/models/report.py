@@ -38,6 +38,9 @@ class Report(Base):
     is_substitution: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False
     )
+    is_late: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
     inspection_time: Mapped[time | None] = mapped_column(Time, nullable=True)
 
     status: Mapped[str] = mapped_column(

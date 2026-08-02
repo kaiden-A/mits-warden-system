@@ -146,6 +146,11 @@ export default function AdminReportsPage() {
                                 bg pihak {report.duty_warden_name}
                               </span>
                             )}
+                            {report.is_late && report.status !== 'draft' && (
+                              <span className="ml-1.5 text-[0.58rem] font-semibold uppercase tracking-wider px-1 py-0.5 border border-red text-red bg-red-wash rounded-sm whitespace-nowrap inline-block">
+                                Terlewat
+                              </span>
+                            )}
                           </div>
                         </div>
                         <Stamp status={report.status} />
@@ -154,6 +159,13 @@ export default function AdminReportsPage() {
                       <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[5000px]' : 'max-h-0'}`}>
                         {detail && (
                           <div className="pl-4 sm:pl-5 pr-3 sm:pr-4 py-4 bg-paper border-t border-paper-line rounded-b-sm">
+                            {detail.is_late && detail.status !== 'draft' && (
+                              <div className="mb-3">
+                                <span className="text-[0.58rem] font-semibold uppercase tracking-wider px-1 py-0.5 border border-red text-red bg-red-wash rounded-sm whitespace-nowrap inline-block">
+                                  Terlewat
+                                </span>
+                              </div>
+                            )}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                               {SECTIONS_CONFIG.map(cfg => (
                                 <div key={cfg.id} className="sm:col-span-2">

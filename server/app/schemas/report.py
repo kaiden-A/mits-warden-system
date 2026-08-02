@@ -84,6 +84,7 @@ class ReportRead(BaseModel):
     submitted_by: UserBrief | None = None
     duty_warden: UserBrief | None = None
     is_substitution: bool = False
+    is_late: bool = False
     inspection_time: time | None = None
     submitted_at: datetime | None = None
     reviewed_by: UserBrief | None = None
@@ -109,6 +110,7 @@ class ReportListItem(BaseModel):
     submitted_by_name: str = ""
     duty_warden_name: str = ""
     is_substitution: bool = False
+    is_late: bool = False
     inspection_time: time | None = None
     submitted_at: datetime | None = None
     aduan_kerosakan: str = "TKD"
