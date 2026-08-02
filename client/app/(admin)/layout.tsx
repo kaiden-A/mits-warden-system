@@ -7,6 +7,7 @@ import Sidebar from '@/app/components/Sidebar';
 
 const NAV_ITEMS = [
   { key: 'overview', label: 'Ringkasan', href: '/overview' },
+  { key: 'analytics', label: 'Statistik', href: '/analytics' },
   { key: 'wardens', label: 'Warden', href: '/wardens' },
   { key: 'schedule', label: 'Jadual', href: '/schedule' },
   { key: 'reports', label: 'Laporan', href: '/reports' },

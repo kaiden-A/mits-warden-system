@@ -13,6 +13,7 @@ interface NavItem {
 
 const ICONS: Record<string, string> = {
   overview: 'dashboard',
+  analytics: 'monitoring',
   wardens: 'badge',
   schedule: 'calendar_month',
   reports: 'description',
