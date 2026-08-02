@@ -1,6 +1,7 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 import { apiGet, apiPost, apiPatch } from '@/app/lib/api';
 import { iso, fromISO } from '@/app/lib/constants';
@@ -13,7 +14,7 @@ import { SECTIONS_CONFIG, fmtLong, countRatedSections, fmtTime, isReportComplete
 import ApprovalTrail from '@/app/components/ApprovalTrail';
 import Modal from '@/app/components/Modal';
 
-export default function TodayPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+function TodayPageInner() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [report, setReport] = useState<any>(null);
@@ -24,8 +25,8 @@ export default function TodayPage({ searchParams }: { searchParams: Promise<Reco
   const [detailReport, setDetailReport] = useState<any>(null);
   const [showDetail, setShowDetail] = useState(false);
 
-  const sp = use(searchParams);
-  const paramDate = typeof sp.date === 'string' ? sp.date : null;
+  const searchParams = useSearchParams();
+  const paramDate = searchParams.get('date');
   const targetDate = paramDate && /^\d{4}-\d{2}-\d{2}$/.test(paramDate) ? paramDate : iso(new Date());
   const todayStr = targetDate;
 
@@ -271,4 +272,12 @@ export default function TodayPage({ searchParams }: { searchParams: Promise<Reco
   }
 
   return null;
+}
+
+export default function TodayPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-12 text-dim-text">Memuatkan…</div>}>
+      <TodayPageInner />
+    </Suspense>
+  );
 }
