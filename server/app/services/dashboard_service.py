@@ -4,8 +4,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.report import Report
-from app.models.roster import Roster
 from app.models.user import User
+from app.services.roster_service import get_roster_for_date
 from app.utils.timezone import today_malaysia
 
 
@@ -47,10 +47,7 @@ async def get_warden_dashboard(
     )
     stats["reviewed_total"] = reviewed_result.scalar() or 0
 
-    roster_result = await db.execute(
-        select(Roster).where(Roster.date == today)
-    )
-    today_roster = roster_result.scalar_one_or_none()
+    today_roster = await get_roster_for_date(db, today)
 
     today_info = None
     if today_roster:
@@ -67,14 +64,19 @@ async def get_warden_dashboard(
         )
         today_report = report_result.scalar_one_or_none()
 
+        duty_warden_id = (
+            today_roster.putera_warden_id
+            if current_user.hostel == "Asrama Putera"
+            else today_roster.puteri_warden_id
+        )
+        duty_warden = await db.get(User, duty_warden_id)
+
         today_info = {
             "date": today,
             "day": today.strftime("%A"),
             "duty_warden": {
-                "id": today_roster.putera_warden_id
-                if current_user.hostel == "Asrama Putera"
-                else today_roster.puteri_warden_id,
-                "name": "",
+                "id": duty_warden_id,
+                "name": duty_warden.name if duty_warden else "",
             },
             "is_user_on_duty": is_on_duty,
             "report": today_report.status if today_report else None,

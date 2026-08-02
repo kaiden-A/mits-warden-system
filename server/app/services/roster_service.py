@@ -1,5 +1,6 @@
 import uuid
 from datetime import date, datetime, timedelta, timezone
+from types import SimpleNamespace
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -83,37 +84,43 @@ async def get_weekly_roster(week_start: date, db: AsyncSession) -> list[dict]:
     return result
 
 
-async def get_today_roster(db: AsyncSession) -> dict | None:
-    today = today_malaysia()
-
+async def get_roster_for_date(
+    db: AsyncSession, target_date: date
+) -> Roster | SimpleNamespace | None:
     result = await db.execute(
-        select(Roster).where(Roster.date == today)
+        select(Roster).where(Roster.date == target_date)
     )
     roster = result.scalar_one_or_none()
-
     if roster:
-        putera = await _resolve_warden(db, roster.putera_warden_id)
-        puteri = await _resolve_warden(db, roster.puteri_warden_id)
-        return {
-            "date": roster.date,
-            "day": _DAY_NAMES[roster.date.weekday()],
-            "putera": putera,
-            "puteri": puteri,
-        }
+        return roster
 
     default = await db.execute(select(RosterDefault))
     default_entry = default.scalar_one_or_none()
     if default_entry:
-        putera = await _resolve_warden(db, default_entry.putera_warden_id)
-        puteri = await _resolve_warden(db, default_entry.puteri_warden_id)
-        return {
-            "date": today,
-            "day": _DAY_NAMES[today.weekday()],
-            "putera": putera,
-            "puteri": puteri,
-        }
+        return SimpleNamespace(
+            date=target_date,
+            putera_warden_id=default_entry.putera_warden_id,
+            puteri_warden_id=default_entry.puteri_warden_id,
+        )
 
     return None
+
+
+async def get_today_roster(db: AsyncSession) -> dict | None:
+    today = today_malaysia()
+
+    roster = await get_roster_for_date(db, today)
+    if not roster:
+        return None
+
+    putera = await _resolve_warden(db, roster.putera_warden_id)
+    puteri = await _resolve_warden(db, roster.puteri_warden_id)
+    return {
+        "date": roster.date,
+        "day": _DAY_NAMES[roster.date.weekday()],
+        "putera": putera,
+        "puteri": puteri,
+    }
 
 
 async def update_weekly_roster(

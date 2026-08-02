@@ -5,9 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.report import ApprovalLog, Report, ReportRating
-from app.models.roster import Roster
 from app.models.user import User
 from app.services.email_service import notify_substitution
+from app.services.roster_service import get_roster_for_date
 
 SECTION_ITEM_KEYS = {
     "rutinAktivitiMurid": [
@@ -81,10 +81,7 @@ async def create_report(
             detail="Laporan sudah wujud untuk tarikh dan asrama ini.",
         )
 
-    roster_result = await db.execute(
-        select(Roster).where(Roster.date == report_date)
-    )
-    roster_entry = roster_result.scalar_one_or_none()
+    roster_entry = await get_roster_for_date(db, report_date)
 
     if not roster_entry:
         raise HTTPException(
