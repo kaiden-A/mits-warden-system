@@ -43,4 +43,4 @@ app.include_router(analytics.router, prefix="/api")
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "whats actually happen"}
