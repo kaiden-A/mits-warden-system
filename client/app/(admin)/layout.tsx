@@ -9,7 +9,8 @@ const NAV_ITEMS = [
   { key: 'overview', label: 'Ringkasan', href: '/overview' },
   { key: 'analytics', label: 'Statistik', href: '/analytics' },
   { key: 'wardens', label: 'Warden', href: '/wardens' },
-  { key: 'schedule', label: 'Jadual', href: '/schedule' },
+  { key: 'cycles', label: 'Jadual', href: '/cycles' },
+  { key: 'schedule', label: 'Jadual Mingguan', href: '/schedule' },
   { key: 'reports', label: 'Laporan', href: '/reports' },
 ];
 

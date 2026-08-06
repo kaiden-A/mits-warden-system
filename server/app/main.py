@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import get_engine
-from app.routers import analytics, auth, dashboard, reports, roster, wardens
+from app.routers import analytics, auth, cycles, dashboard, reports, roster, wardens
 
 
 @asynccontextmanager
@@ -35,6 +35,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api")
 app.include_router(wardens.router, prefix="/api")
 app.include_router(roster.router, prefix="/api")
+app.include_router(cycles.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")

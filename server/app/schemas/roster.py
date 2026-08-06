@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, field_validator
 
@@ -52,3 +52,54 @@ class RosterRead(BaseModel):
     days: list[RosterDayRead]
 
     model_config = {"from_attributes": True}
+
+
+class WardenPairIn(BaseModel):
+    name: str
+    putera_warden_id: uuid.UUID
+    puteri_warden_id: uuid.UUID
+
+
+class ExcludedDateIn(BaseModel):
+    date: date
+    reason: str = "Cuti"
+
+
+class RosterCycleCreate(BaseModel):
+    name: str
+    start_date: date
+    end_date: date
+    pairs: list[WardenPairIn]
+    excluded_dates: list[ExcludedDateIn] = []
+
+
+class RosterCycleExcludedUpdate(BaseModel):
+    excluded_dates: list[ExcludedDateIn] = []
+
+
+class RosterCycleSummary(BaseModel):
+    id: uuid.UUID
+    name: str
+    start_date: date
+    end_date: date
+    pairs: list[dict]
+    excluded_dates: list[dict]
+    status: str
+    created_at: datetime
+    published_at: datetime | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class RosterCycleEntryRead(BaseModel):
+    id: uuid.UUID
+    date: date
+    pair_name: str | None = None
+    putera: WardenAssignment | None = None
+    puteri: WardenAssignment | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class RosterCycleDetail(RosterCycleSummary):
+    entries: list[RosterCycleEntryRead] = []

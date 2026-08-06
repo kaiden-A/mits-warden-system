@@ -68,6 +68,17 @@ export async function apiPatch(path: string, body?: unknown) {
   return handleResponse(res);
 }
 
+export async function apiDelete(path: string) {
+  const opts: RequestInit = { method: 'DELETE' };
+  let res = await fetch(path, opts);
+  if (res.status === 401) {
+    const refreshed = await refreshToken();
+    if (refreshed) res = await fetch(path, opts);
+  }
+  if (!res.ok) return handleResponse(res);
+  return null;
+}
+
 export async function apiPut(path: string, body?: unknown) {
   const opts: RequestInit = {
     method: 'PUT',
