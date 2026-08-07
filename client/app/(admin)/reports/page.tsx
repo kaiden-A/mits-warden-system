@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { apiGet, apiPost } from '@/app/lib/api';
 import { iso, mondayOf, addDays, fromISO, malayDay, fmtShort, fmtTime, SECTIONS_CONFIG } from '@/app/lib/constants';
+import { generateDailyReportPdf } from '@/app/lib/dailyReportPdf';
 import Stamp from '@/app/components/Stamp';
 import WeekFlip from '@/app/components/WeekFlip';
 import { RatingTableReadOnly } from '@/app/components/RatingTable';
@@ -18,6 +19,7 @@ export default function AdminReportsPage() {
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [pdfBusy, setPdfBusy] = useState<string | null>(null);
 
   const weekEnd = addDays(weekStart, 6);
   const isCurrentWeek = iso(weekStart) === iso(mondayOf(new Date()));
@@ -89,6 +91,23 @@ export default function AdminReportsPage() {
     }
   };
 
+  const handlePrintDay = async (ds: string, dayReports: any[]) => {
+    setPdfBusy(ds);
+    try {
+      const details = await Promise.all(
+        dayReports.map(r =>
+          reportDetails[r.id] ? Promise.resolve(reportDetails[r.id]) : apiGet(`/api/reports/${r.id}`)
+        )
+      );
+      await generateDailyReportPdf({ date: ds, reports: details });
+      showToast('PDF laporan harian telah dimuat turun.');
+    } catch (err: any) {
+      showToast(err?.message || 'Gagal menjana PDF.');
+    } finally {
+      setPdfBusy(null);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-12 text-dim-text flex items-center justify-center gap-2"><LoadingSpinner size={18} />Memuatkan…</div>;
   }
@@ -121,7 +140,16 @@ export default function AdminReportsPage() {
           return (
             <div key={ds}>
               <div className="py-3 px-1 border-b border-paper-line">
-                <div className="font-heading font-bold text-lg text-ink-text">{malayDay(d)}, {d.getDate()} {fmtShort(d)}</div>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="font-heading font-bold text-lg text-ink-text">{malayDay(d)}, {d.getDate()} {fmtShort(d)}</div>
+                  {hasAny && (
+                    <button type="button" onClick={() => handlePrintDay(ds, dayReports)} disabled={pdfBusy === ds}
+                      className="px-3 py-2 text-xs font-semibold rounded bg-transparent text-brass-deep border border-brass-deep hover:bg-brass-wash disabled:opacity-60 transition-colors inline-flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-base leading-none">print</span>
+                      {pdfBusy === ds ? 'Menjana…' : 'Cetak PDF'}
+                    </button>
+                  )}
+                </div>
                 {!hasAny && (
                   <div className="text-sm text-dim-text italic mt-1">{isFuture ? 'Belum sampai masa' : 'Tiada laporan'}</div>
                 )}

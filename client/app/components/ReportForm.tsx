@@ -4,6 +4,16 @@ import { useState } from 'react';
 import { SECTIONS_CONFIG, malayDay, fmtLong, fromISO } from '@/app/lib/constants';
 import { SectionAccordionEditable } from './SectionAccordion';
 import LoadingSpinner from './LoadingSpinner';
+import StudentPicker, { StudentEntry, STUDENT_REASON_ORDER, STUDENT_REASON_LABELS } from './StudentPicker';
+
+function splitMuridSakit(text: string | undefined | null): string {
+  const t = (text || '').trim();
+  if (!t || t === 'TLB') return '';
+  const lines = t.split('\n');
+  const idx = lines.findIndex(l => l.trim().toLowerCase() === 'lain-lain:');
+  if (idx >= 0) return lines.slice(idx + 1).join('\n').trim();
+  return t;
+}
 
 interface ReportFormProps {
   report: any;
@@ -20,7 +30,8 @@ interface ReportFormProps {
 export default function ReportForm({ report, wardenName, wardenHostel, dateStr, scheduledWardenName, isSubstitution, isReadOnly, saving, onSave }: ReportFormProps) {
   const [inspectionTime, setInspectionTime] = useState(report?.inspection_time || '');
   const [aduanKerosakan, setAduanKerosakan] = useState(report?.aduan_kerosakan || 'TKD');
-  const [muridSakit, setMuridSakit] = useState(report?.murid_sakit || 'TLB');
+  const [students, setStudents] = useState<StudentEntry[]>([]);
+  const [lainLain, setLainLain] = useState(() => splitMuridSakit(report?.murid_sakit));
   const [kawalanKeselamatan, setKawalanKeselamatan] = useState(report?.kawalan_keselamatan || '');
   const [catatanTambahan, setCatatanTambahan] = useState(report?.catatan_tambahan || '');
   const [ratings, setRatings] = useState<Record<string, Record<string, string>>>(() => {
@@ -56,12 +67,26 @@ export default function ReportForm({ report, wardenName, wardenHostel, dateStr, 
       if (Object.keys(sectionRatings).length > 0) ratingsData[cfg.id] = sectionRatings;
     });
 
+    const textLines: string[] = [];
+    STUDENT_REASON_ORDER.forEach(reason => {
+      const group = students.filter(s => s.reason === reason);
+      if (group.length > 0) {
+        textLines.push(`${STUDENT_REASON_LABELS[reason]}:`);
+        group.forEach(s => textLines.push(`• ${s.name} (${s.classLabel})`));
+      }
+    });
+    if (lainLain.trim()) {
+      textLines.push('Lain-lain:');
+      textLines.push(lainLain.trim());
+    }
+    const muridSakit = textLines.length > 0 ? textLines.join('\n') : 'TLB';
+
     return {
       date: dateStr,
       inspection_time: inspectionTime || null,
       ratings: Object.keys(ratingsData).length > 0 ? ratingsData : null,
       aduan_kerosakan: aduanKerosakan || 'TKD',
-      murid_sakit: muridSakit || 'TLB',
+      murid_sakit: muridSakit,
       kawalan_keselamatan: kawalanKeselamatan ? Number(kawalanKeselamatan) : null,
       catatan_tambahan: catatanTambahan || '',
     };
@@ -161,10 +186,25 @@ export default function ReportForm({ report, wardenName, wardenHostel, dateStr, 
 
           <div>
             <label className="block text-[0.72rem] font-semibold uppercase tracking-wider text-dim-text mb-1">9. Murid Sakit / Balik Luar Jadual</label>
-            <p className="text-xs text-dim-text mb-1">Rekodkan murid yang sakit atau tiada. Jika tiada, tulis <strong>TLB</strong>.</p>
-            <textarea value={muridSakit} readOnly={isReadOnly}
-              onChange={e => setMuridSakit(e.target.value)}
-              className="w-full min-h-[80px] px-3 py-2 border border-paper-line rounded bg-white text-sm text-ink-text resize-y outline-none focus-visible:border-brass" />
+            <p className="text-xs text-dim-text mb-2">Pilih kelas, tandakan murid yang sakit atau balik luar jadual. Jika tiada, biarkan kosong (<strong>TLB</strong> akan disimpan).</p>
+            {!isReadOnly ? (
+              <StudentPicker
+                hostel={wardenHostel}
+                value={students}
+                onChange={setStudents}
+              />
+            ) : (
+              <div className="px-3 py-2 border border-paper-line rounded bg-paper text-sm whitespace-pre-wrap">{splitMuridSakit(report?.murid_sakit) || 'TLB'}</div>
+            )}
+            {!isReadOnly && (
+              <div className="mt-3">
+                <label className="block text-[0.72rem] font-semibold uppercase tracking-wider text-dim-text mb-1">Lain-lain (Nota Tambahan)</label>
+                <textarea value={lainLain}
+                  onChange={e => setLainLain(e.target.value)}
+                  placeholder="Sebarang nama murid atau nota yang tidak ada dalam senarai…"
+                  className="w-full min-h-[70px] px-3 py-2 border border-paper-line rounded bg-white text-sm text-ink-text resize-y outline-none focus-visible:border-brass" />
+              </div>
+            )}
           </div>
 
           <div>
