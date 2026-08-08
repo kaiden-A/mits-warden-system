@@ -73,6 +73,7 @@ async def list_reports(
     week_start: date = Query(default=None),
     hostel: str | None = Query(default=None),
     status: str | None = Query(default=None),
+    scope: str = Query(default="own"),
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=20, le=50),
     db: AsyncSession = Depends(get_db),
@@ -85,7 +86,7 @@ async def list_reports(
 
     query = select(Report)
 
-    if current_user.role == "warden":
+    if current_user.role == "warden" and (scope != "all" or not current_user.is_admin):
         query = query.where(Report.hostel == current_user.hostel)
 
     if hostel:
@@ -169,6 +170,13 @@ async def get_report(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Report not found",
         )
+
+    if current_user.role == "warden" and not current_user.is_admin:
+        if report.hostel != current_user.hostel:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Report not found",
+            )
 
     ratings_result = await db.execute(
         select(ReportRating).where(

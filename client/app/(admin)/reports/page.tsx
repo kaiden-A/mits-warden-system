@@ -28,7 +28,7 @@ export default function AdminReportsPage() {
     setLoading(true);
     setReportDetails({});
     setExpandedIds({});
-    apiGet('/api/reports', { week_start: iso(weekStart) })
+    apiGet('/api/reports', { week_start: iso(weekStart), scope: 'all' })
       .then(setReports)
       .catch(() => showToast('Gagal memuatkan laporan.'))
       .finally(() => setLoading(false));
