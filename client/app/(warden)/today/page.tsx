@@ -4,26 +4,26 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 import { apiGet, apiPost, apiPatch } from '@/app/lib/api';
-import { iso, fromISO } from '@/app/lib/constants';
+import { iso, fromISO, fmtLong, isReportComplete } from '@/app/lib/constants';
+import type { ReportDetail } from '@/app/lib/types';
 import { useToast } from '@/app/components/Toast';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
-import ReportForm from '@/app/components/ReportForm';
+import PageHeader from '@/app/components/PageHeader';
 import Stamp from '@/app/components/Stamp';
-import { SectionAccordionReadOnly } from '@/app/components/SectionAccordion';
-import { SECTIONS_CONFIG, fmtLong, countRatedSections, fmtTime, isReportComplete } from '@/app/lib/constants';
-import ApprovalTrail from '@/app/components/ApprovalTrail';
-import Modal from '@/app/components/Modal';
+import ReportForm from '@/app/components/ReportForm';
+import NoReportCard from './components/NoReportCard';
+import RecordedReportCard from './components/RecordedReportCard';
+import ReportDetailModal from './components/ReportDetailModal';
 
 function TodayPageInner() {
   const { user } = useAuth();
   const { showToast } = useToast();
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<ReportDetail | null>(null);
   const [reportId, setReportId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [detailReport, setDetailReport] = useState<any>(null);
-  const [showDetail, setShowDetail] = useState(false);
+  const [detailReport, setDetailReport] = useState<ReportDetail | null>(null);
 
   const searchParams = useSearchParams();
   const paramDate = searchParams.get('date');
@@ -34,8 +34,8 @@ function TodayPageInner() {
     const target = fromISO(todayStr);
     const todayWeekStart = iso(new Date(target.getFullYear(), target.getMonth(), target.getDate() - target.getDay() + 1));
     apiGet('/api/reports', { week_start: todayWeekStart })
-      .then((reports: any[]) => {
-        const todayReport = reports.find((r: any) => r.date === todayStr);
+      .then((reports: ReportDetail[]) => {
+        const todayReport = reports.find(r => r.date === todayStr);
         if (todayReport) {
           setReportId(todayReport.id);
           return apiGet(`/api/reports/${todayReport.id}`).then(setReport);
@@ -46,12 +46,12 @@ function TodayPageInner() {
       .finally(() => setLoading(false));
   }, [todayStr]);
 
-  const handleSave = async (data: any, status: string) => {
+  const handleSave = async (data: ReportDetail, status: string) => {
     setSaving(true);
     try {
       const isSubmitting = status === 'submitted';
 
-      if (isSubmitting && !isReportComplete(data)) {
+      if (isSubmitting && !isReportComplete(data as unknown as Record<string, unknown>)) {
         showToast('Sila lengkapkan semua bahagian sebelum menghantar.');
         setSaving(false);
         return;
@@ -82,10 +82,10 @@ function TodayPageInner() {
 
       setShowForm(false);
       showToast(isSubmitting ? 'Laporan dihantar.' : 'Draf disimpan.');
-    } catch (err: any) {
-      const msg = err.message || '';
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
       if (msg.includes('draft')) {
-        setReport((prev: any) => prev ? { ...prev, status: 'submitted' } : prev);
+        setReport(prev => prev ? { ...prev, status: 'submitted' } : prev);
         setShowForm(false);
       } else if (msg.includes('already')) {
         setShowForm(false);
@@ -98,24 +98,30 @@ function TodayPageInner() {
 
   const handleSubmitDraft = async () => {
     if (!reportId) return;
-    if (!isReportComplete(report)) {
+    if (!report || !isReportComplete(report as unknown as Record<string, unknown>)) {
       showToast('Sila lengkapkan semua bahagian sebelum menghantar.');
       return;
     }
     setSaving(true);
     try {
       await apiPost(`/api/reports/${reportId}/submit`);
-      setReport((prev: any) => ({ ...prev, status: 'submitted' }));
+      setReport(prev => prev ? { ...prev, status: 'submitted' } : prev);
       showToast('Laporan dihantar.');
-    } catch (err: any) {
-      const msg = err.message || '';
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
       if (msg.includes('draft')) {
-        setReport((prev: any) => prev ? { ...prev, status: 'submitted' } : prev);
+        setReport(prev => prev ? { ...prev, status: 'submitted' } : prev);
       }
       showToast(msg || 'Gagal menghantar.');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleViewDetail = async () => {
+    if (!reportId) return;
+    const r = await apiGet(`/api/reports/${reportId}`);
+    setDetailReport(r);
   };
 
   if (loading) {
@@ -128,23 +134,8 @@ function TodayPageInner() {
     if (!showForm && !report) {
       return (
         <div>
-          <div className="flex items-baseline justify-between flex-wrap gap-3 mb-6">
-            <div>
-              <span className="block font-mono text-[0.72rem] uppercase tracking-wider text-dim-text mb-1">{dateLabel}</span>
-              <h2 className="font-heading text-2xl font-bold text-ink-text">Laporan Hari Ini</h2>
-            </div>
-          </div>
-          <div className="bg-paper-raised border border-paper-line rounded-lg p-6 sm:p-8 text-center">
-            <span className="material-symbols-outlined text-4xl sm:text-5xl text-dim-text opacity-40 mb-3 block">description</span>
-            <h3 className="font-heading font-semibold text-base sm:text-lg mb-2">Belum ada laporan untuk hari ini</h3>
-            <p className="text-sm text-dim-text max-w-xs mx-auto mb-6">
-              Sila lengkapkan laporan pemeriksaan harian untuk hari ini.
-            </p>
-            <button type="button" onClick={() => setShowForm(true)}
-              className="w-full sm:w-auto px-5 py-3 sm:py-2.5 text-base font-semibold rounded bg-brass text-white hover:bg-brass-deep transition-colors">
-              Buat Laporan Baru
-            </button>
-          </div>
+          <PageHeader eyebrow={dateLabel} title="Laporan Hari Ini" />
+          <NoReportCard onStart={() => setShowForm(true)} />
         </div>
       );
     }
@@ -167,7 +158,6 @@ function TodayPageInner() {
   }
 
   if (report && !showForm) {
-    const isDraft = report.status === 'draft';
     return (
       <div>
         <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
@@ -178,95 +168,19 @@ function TodayPageInner() {
           <Stamp status={report.status} />
         </div>
 
-        <div className="bg-paper-raised border border-paper-line rounded-lg p-6 sm:p-8 text-center">
-          <span className={`material-symbols-outlined text-3xl mb-2 block ${isDraft ? 'text-dim-text' : 'text-green'}`}>
-            {isDraft ? 'edit_note' : 'check_circle'}
-          </span>
-          <h3 className="font-heading font-semibold text-base sm:text-lg">Laporan telah direkodkan</h3>
-          <div className="text-sm text-dim-text mt-1 mb-3">
-            {countRatedSections(report)}/11 bahagian dinilai
-            · {!isDraft ? fmtTime(report.submitted_at) : (report.inspection_time || '—')}
-          </div>
-          {isDraft && (
-            <div className="flex flex-col sm:flex-row justify-center gap-2 mt-4">
-              <button type="button" onClick={() => setShowForm(true)}
-                className="w-full sm:w-auto px-4 py-3 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
-                Sunting Draf
-              </button>
-              <button type="button" onClick={handleSubmitDraft} disabled={saving}
-                className="w-full sm:w-auto px-4 py-3 sm:py-1.5 text-sm font-semibold rounded bg-brass text-white hover:bg-brass-deep disabled:opacity-60 transition-colors inline-flex items-center justify-center gap-2">
-                {saving && <LoadingSpinner size={16} />}
-                {saving ? 'Menghantar…' : 'Hantar Laporan'}
-              </button>
-            </div>
-          )}
-          {!isDraft && (
-            <button type="button" onClick={async () => {
-              const r = await apiGet(`/api/reports/${reportId}`);
-              setDetailReport(r);
-              setShowDetail(true);
-            }}
-              className="w-full sm:w-auto px-4 py-3 sm:py-1.5 text-sm font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors mt-4">
-              Lihat Laporan
-            </button>
-          )}
-        </div>
+        <RecordedReportCard
+          report={report}
+          saving={saving}
+          onEdit={() => setShowForm(true)}
+          onSubmitDraft={handleSubmitDraft}
+          onView={handleViewDetail}
+        />
 
-        <Modal open={showDetail} onClose={() => { setShowDetail(false); setDetailReport(null); }} wide>
-          {detailReport && (
-            <div>
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <h3 className="font-heading font-semibold text-lg">{fmtLong(fromISO(detailReport.date))}</h3>
-                <button type="button" onClick={() => setShowDetail(false)}
-                  className="text-dim-text hover:text-ink-text text-xl leading-none p-0.5">&times;</button>
-              </div>
-              <p className="text-sm text-dim-text mb-1">
-                {detailReport.submitted_by?.name || user?.name} · {detailReport.hostel} 
-              </p>
-              <div className="inline-block mb-3">
-                <Stamp status={detailReport.status} />
-              </div>
-
-              <ApprovalTrail
-                submittedAt={detailReport.submitted_at}
-                reviewedAt={detailReport.reviewed_at}
-                flaggedAt={detailReport.flagged_at}
-                reviewedBy={detailReport.reviewed_by?.name}
-                flaggedBy={detailReport.flagged_by?.name}
-              />
-
-              <div className="mt-3">
-                {SECTIONS_CONFIG.map(cfg => (
-                  <SectionAccordionReadOnly
-                    key={cfg.id}
-                    section={cfg}
-                    data={detailReport.ratings?.[cfg.id]}
-                    date={detailReport.date}
-                  />
-                ))}
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-paper-line space-y-3">
-                <div>
-                  <strong className="text-xs">8. Aduan Kerosakan</strong>
-                  <p className="text-sm whitespace-pre-wrap mt-1">{detailReport.aduan_kerosakan}</p>
-                </div>
-                <div>
-                  <strong className="text-xs">9. Murid Sakit / Balik Luar Jadual</strong>
-                  <p className="text-sm whitespace-pre-wrap mt-1">{detailReport.murid_sakit}</p>
-                </div>
-                <div>
-                  <strong className="text-xs">10. Kawalan Keselamatan</strong>
-                  <p className="text-sm mt-1">{detailReport.kawalan_keselamatan ? `${detailReport.kawalan_keselamatan} / 5` : '—'}</p>
-                </div>
-                <div>
-                  <strong className="text-xs">11. Catatan Tambahan</strong>
-                  <p className="text-sm whitespace-pre-wrap mt-1">{detailReport.catatan_tambahan || '—'}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </Modal>
+        <ReportDetailModal
+          report={detailReport}
+          fallbackName={user?.name}
+          onClose={() => setDetailReport(null)}
+        />
       </div>
     );
   }
