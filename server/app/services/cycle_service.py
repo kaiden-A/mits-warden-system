@@ -101,6 +101,17 @@ async def create_cycle(body, current_user: User, db: AsyncSession) -> RosterCycl
     for pair in body.pairs:
         await _validate_pair(pair.putera_warden_id, pair.puteri_warden_id, db)
 
+    overlapping = await _find_overlapping(body.start_date, body.end_date, db)
+    if overlapping:
+        names = ", ".join(
+            f"'{c.name}' ({c.start_date.isoformat()} – {c.end_date.isoformat()})"
+            for c in overlapping
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Tempoh ini bertindih dengan kitaran sedia ada: {names}. Sila pilih tempoh lain.",
+        )
+
     cycle = RosterCycle(
         name=body.name,
         start_date=body.start_date,
@@ -119,19 +130,28 @@ async def create_cycle(body, current_user: User, db: AsyncSession) -> RosterCycl
     return cycle
 
 
+async def _find_overlapping(start_date: date, end_date: date, db: AsyncSession) -> list[RosterCycle]:
+    result = await db.execute(
+        select(RosterCycle).where(
+            RosterCycle.start_date <= end_date,
+            RosterCycle.end_date >= start_date,
+        )
+    )
+    return result.scalars().all()
+
+
+async def _validate_warden(warden_id: uuid.UUID, hostel: str, db: AsyncSession):
+    user = await db.get(User, warden_id)
+    if not user or user.role != "warden" or user.status != "active" or user.hostel != hostel:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Warden {hostel} dalam pasangan tidak sah.",
+        )
+
+
 async def _validate_pair(putera_id: uuid.UUID, puteri_id: uuid.UUID, db: AsyncSession):
-    putera = await db.get(User, putera_id)
-    if not putera or putera.role != "warden" or putera.status != "active" or putera.hostel != "Asrama Putera":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Warden Asrama Putera dalam pasangan tidak sah.",
-        )
-    puteri = await db.get(User, puteri_id)
-    if not puteri or puteri.role != "warden" or puteri.status != "active" or puteri.hostel != "Asrama Puteri":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Warden Asrama Puteri dalam pasangan tidak sah.",
-        )
+    await _validate_warden(putera_id, "Asrama Putera", db)
+    await _validate_warden(puteri_id, "Asrama Puteri", db)
 
 
 async def get_cycle(cycle_id: uuid.UUID, db: AsyncSession) -> RosterCycle:
@@ -157,6 +177,24 @@ async def generate_cycle_entries(cycle: RosterCycle, db: AsyncSession) -> Roster
         db.add(RosterCycleEntry(cycle_id=cycle.id, **a))
     await db.commit()
     return await get_cycle(cycle.id, db)
+
+
+async def apply_overrides(cycle: RosterCycle, overrides: list, db: AsyncSession):
+    """Apply manual (date-keyed) warden changes on top of generated entries."""
+    if not overrides:
+        return
+    by_date = {e.date: e for e in cycle.entries}
+    for o in overrides:
+        entry = by_date.get(o.date)
+        if not entry:
+            continue
+        putera_id = o.putera_warden_id if o.putera_warden_id is not None else entry.putera_warden_id
+        puteri_id = o.puteri_warden_id if o.puteri_warden_id is not None else entry.puteri_warden_id
+        await _validate_warden(putera_id, "Asrama Putera", db)
+        await _validate_warden(puteri_id, "Asrama Puteri", db)
+        entry.putera_warden_id = putera_id
+        entry.puteri_warden_id = puteri_id
+    await db.commit()
 
 
 async def publish_cycle(cycle: RosterCycle, current_user: User, db: AsyncSession) -> RosterCycle:
@@ -187,8 +225,56 @@ async def publish_cycle(cycle: RosterCycle, current_user: User, db: AsyncSession
 
 
 async def delete_cycle(cycle: RosterCycle, db: AsyncSession):
+    await db.execute(
+        delete(Roster).where(
+            Roster.date >= cycle.start_date, Roster.date <= cycle.end_date
+        )
+    )
     await db.delete(cycle)
     await db.commit()
+
+
+async def update_cycle_entry(
+    cycle: RosterCycle,
+    entry_id: uuid.UUID,
+    body,
+    current_user: User,
+    db: AsyncSession,
+) -> RosterCycle:
+    entry = next((e for e in cycle.entries if e.id == entry_id), None)
+    if not entry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tugasan untuk tarikh ini tidak dijumpai.",
+        )
+
+    putera_id = body.putera_warden_id if body.putera_warden_id is not None else entry.putera_warden_id
+    puteri_id = body.puteri_warden_id if body.puteri_warden_id is not None else entry.puteri_warden_id
+    await _validate_warden(putera_id, "Asrama Putera", db)
+    await _validate_warden(puteri_id, "Asrama Puteri", db)
+
+    entry.putera_warden_id = putera_id
+    entry.puteri_warden_id = puteri_id
+
+    result = await db.execute(select(Roster).where(Roster.date == entry.date))
+    roster = result.scalar_one_or_none()
+    if roster:
+        roster.putera_warden_id = putera_id
+        roster.puteri_warden_id = puteri_id
+        roster.updated_by = current_user.id
+        roster.updated_at = datetime.now(timezone.utc)
+    else:
+        db.add(
+            Roster(
+                date=entry.date,
+                putera_warden_id=putera_id,
+                puteri_warden_id=puteri_id,
+                updated_by=current_user.id,
+            )
+        )
+
+    await db.commit()
+    return await get_cycle(cycle.id, db)
 
 
 async def entry_to_read(entry: RosterCycleEntry, db: AsyncSession, warden_map: dict | None = None) -> dict:

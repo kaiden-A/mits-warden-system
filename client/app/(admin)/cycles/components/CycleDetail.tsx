@@ -5,11 +5,15 @@ import MonthGrid from './MonthGrid';
 import CutiList from './CutiList';
 import { MONTHS, HARI, fmtRange, isoToLocal, monthsOf, cellsOf } from '../constants';
 import { fromISO } from '@/app/lib/constants';
-import type { CycleDetail } from '../types';
+import type { CycleDetail, CycleEntryEdit, Warden } from '../types';
 
-export default function CycleDetail({ detail, busy, onBack, onPrint, onGenerate, onDelete, onToggleExcluded, onUpdateExcluded, onRemoveExcluded, onSaveExcluded }: {
+export default function CycleDetail({ detail, busy, wardens, dirtyEdits, pendingCount, onEditEntry, onBack, onPrint, onGenerate, onDelete, onToggleExcluded, onUpdateExcluded, onRemoveExcluded, onSaveExcluded }: {
   detail: CycleDetail;
   busy: boolean;
+  wardens: Warden[];
+  dirtyEdits: Map<string, CycleEntryEdit>;
+  pendingCount: number;
+  onEditEntry: (ds: string, values: CycleEntryEdit) => void;
   onBack: () => void;
   onPrint: () => void;
   onGenerate: () => void;
@@ -21,10 +25,12 @@ export default function CycleDetail({ detail, busy, onBack, onPrint, onGenerate,
 }) {
   const entryByDate = new Map(detail.entries.map(e => [e.date, e]));
   const months = monthsOf(detail.start_date, detail.end_date);
+  const puteraWardens = wardens.filter(w => w.status === 'active' && w.hostel === 'Asrama Putera');
+  const puteriWardens = wardens.filter(w => w.status === 'active' && w.hostel === 'Asrama Puteri');
 
   return (
     <div>
-      <div className="flex items-baseline justify-between flex-wrap gap-3 mb-4">
+      <div className="flex items-baseline justify-between flex-wrap gap-3 mb-4 mt-7">
         <div>
           <span className="block font-mono text-[0.72rem] uppercase tracking-wider text-dim-text mb-1">Jadual Warden</span>
           <h2 className="font-heading text-2xl font-bold text-ink-text">{detail.name}</h2>
@@ -45,6 +51,9 @@ export default function CycleDetail({ detail, busy, onBack, onPrint, onGenerate,
             {busy && <LoadingSpinner size={16} />}
             {busy ? 'Menjana…' : (detail.entries.length > 0 ? 'Jana Semula' : 'Jana Roster')}
           </button>
+          {pendingCount > 0 && (
+            <span className="text-[0.68rem] font-semibold text-brass-deep bg-brass-wash border border-brass/40 rounded px-2 py-1 self-center">{pendingCount} perubahan belum disimpan</span>
+          )}
           <button type="button" onClick={onDelete} disabled={busy}
             className="px-3 py-1.5 text-sm font-semibold rounded bg-transparent text-red border border-red hover:bg-red-wash transition-colors">
             Padam
@@ -76,31 +85,51 @@ export default function CycleDetail({ detail, busy, onBack, onPrint, onGenerate,
                         <th className="text-left text-[0.68rem] uppercase tracking-wider text-dim-text font-mono font-semibold py-2 px-2 border-b border-paper-line">Asrama Puteri</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {cellsOf(m).filter(d => d && d >= fromISO(detail.start_date) && d <= fromISO(detail.end_date)).map(d => {
-                        if (!d) return null;
-                        const ds = isoToLocal(d);
-                        const ex = detail.excluded_dates.find(x => x.date === ds);
-                        const entry = entryByDate.get(ds);
-                        return (
-                          <tr key={ds} className={ex ? 'bg-red-wash/40' : ''}>
-                            <td className="py-2.5 px-2 border-b border-paper-line">
-                              <span className="font-mono text-xs text-dim-text">{d.getDate()} {MONTHS[d.getMonth()].slice(0, 3)}</span>
-                              {ex && <span className="ml-2 text-[0.62rem] font-semibold text-red uppercase tracking-wide">{ex.reason || 'Cuti'}</span>}
-                            </td>
-                            <td className="py-2.5 px-2 border-b border-paper-line">
-                              <span className="font-mono text-xs text-dim-text">{HARI[d.getDay()]}</span>
-                            </td>
-                            <td className="py-2.5 px-2 border-b border-paper-line text-sm">
-                              {ex ? <span className="text-dim-text">—</span> : (entry?.putera?.name || '—')}
-                            </td>
-                            <td className="py-2.5 px-2 border-b border-paper-line text-sm">
-                              {ex ? <span className="text-dim-text">—</span> : (entry?.puteri?.name || '—')}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
+<tbody>
+  {cellsOf(m).filter(d => d && d >= fromISO(detail.start_date) && d <= fromISO(detail.end_date)).map(d => {
+    if (!d) return null;
+    const ds = isoToLocal(d);
+    const ex = detail.excluded_dates.find(x => x.date === ds);
+    const entry = entryByDate.get(ds);
+    const dirty = dirtyEdits.get(ds);
+    return (
+      <tr key={ds} className={ex ? 'bg-red-wash/40' : dirty ? 'bg-brass-wash/60' : ''}>
+        <td className="py-2 px-2 border-b border-paper-line">
+          <span className="font-mono text-xs text-dim-text">{d.getDate()} {MONTHS[d.getMonth()].slice(0, 3)}</span>
+          {dirty && <span className="ml-2 inline-block text-[0.6rem] font-semibold text-brass-deep uppercase tracking-wide bg-brass-wash border border-brass/40 rounded px-1 py-0.5">Diubah</span>}
+          {ex && <span className="ml-2 text-[0.62rem] font-semibold text-red uppercase tracking-wide">{ex.reason || 'Cuti'}</span>}
+        </td>
+        <td className="py-2 px-2 border-b border-paper-line">
+          <span className="font-mono text-xs text-dim-text">{HARI[d.getDay()]}</span>
+        </td>
+        <td className="py-1 px-2 border-b border-paper-line text-sm">
+          {ex ? <span className="text-dim-text">—</span> : entry ? (
+            <select
+              value={dirty?.putera_warden_id ?? entry.putera?.id ?? ''}
+              onChange={e => onEditEntry(ds, { putera_warden_id: e.target.value })}
+              disabled={busy}
+              title={dirty?.putera_warden_id ? puteraWardens.find(w => w.id === dirty.putera_warden_id)?.name : entry.putera?.name}
+              className="w-full max-w-[200px] block truncate px-1 py-1 rounded bg-transparent text-sm text-ink-text outline-none focus-visible:border-brass disabled:opacity-60">
+              {puteraWardens.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+            </select>
+          ) : <span className="text-dim-text">—</span>}
+        </td>
+        <td className="py-1 px-2 border-b border-paper-line text-sm">
+          {ex ? <span className="text-dim-text">—</span> : entry ? (
+            <select
+              value={dirty?.puteri_warden_id ?? entry.puteri?.id ?? ''}
+              onChange={e => onEditEntry(ds, { puteri_warden_id: e.target.value })}
+              disabled={busy}
+              title={dirty?.puteri_warden_id ? puteriWardens.find(w => w.id === dirty.puteri_warden_id)?.name : entry.puteri?.name}
+              className="w-full max-w-[200px] block truncate px-1 py-1 rounded bg-transparent text-sm text-ink-text outline-none focus-visible:border-brass disabled:opacity-60">
+              {puteriWardens.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+            </select>
+          ) : <span className="text-dim-text">—</span>}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
                   </table>
                 </div>
               </div>

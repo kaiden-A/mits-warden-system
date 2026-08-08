@@ -19,7 +19,8 @@ export async function proxy(method: string, path: string, body?: unknown) {
     body: body instanceof FormData ? body as BodyInit : body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  const data = res.status === 204 ? null : await res.json();
+  if (res.status === 204) return new NextResponse(null, { status: 204 });
+  const data = await res.json();
   return NextResponse.json(data, { status: res.status });
 }
 

@@ -88,8 +88,8 @@ export async function generateCycleSchedulePdf(detail: CycleDetail, signatures: 
       columnStyles: {
         0: { cellWidth: dateW },
         1: { cellWidth: hariW },
-        2: { cellWidth: nameW, halign: 'left' },
-        3: { cellWidth: nameW, halign: 'left' },
+        2: { cellWidth: nameW, halign: 'left', overflow: 'linebreak' },
+        3: { cellWidth: nameW, halign: 'left', overflow: 'linebreak' },
       },
       didParseCell: data => {
         if (data.section !== 'body') return;

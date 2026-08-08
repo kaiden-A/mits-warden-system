@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 
 class WardenAssignment(BaseModel):
@@ -75,6 +75,25 @@ class RosterCycleCreate(BaseModel):
 
 class RosterCycleExcludedUpdate(BaseModel):
     excluded_dates: list[ExcludedDateIn] = []
+
+
+class RosterCycleEntryUpdate(BaseModel):
+    putera_warden_id: uuid.UUID | None = None
+    puteri_warden_id: uuid.UUID | None = None
+
+    @model_validator(mode="after")
+    def at_least_one_warden(self):
+        if self.putera_warden_id is None and self.puteri_warden_id is None:
+            raise ValueError("sekurang-kurangnya satu warden diperlukan")
+        return self
+
+
+class RosterCycleOverride(RosterCycleEntryUpdate):
+    date: date
+
+
+class RosterCycleGenerate(BaseModel):
+    overrides: list[RosterCycleOverride] = []
 
 
 class RosterCycleSummary(BaseModel):

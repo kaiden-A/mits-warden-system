@@ -5,13 +5,14 @@ import { useToast } from '@/app/components/Toast';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
 import MonthGrid from './MonthGrid';
 import CutiList from './CutiList';
-import { monthsOf, isoToLocal } from '../constants';
-import type { Pair, ExcludedDate, Warden, CreateCyclePayload } from '../types';
+import { monthsOf, isoToLocal, fmtRange } from '../constants';
+import type { Pair, ExcludedDate, Warden, CycleSummary, CreateCyclePayload } from '../types';
 
 const EMPTY_PAIR: Pair = { name: 'Pasangan A', putera_warden_id: '', puteri_warden_id: '' };
 
-export default function CreateCycleForm({ wardens, busy, onCancel, onCreate }: {
+export default function CreateCycleForm({ wardens, cycles, busy, onCancel, onCreate }: {
   wardens: Warden[];
+  cycles: CycleSummary[];
   busy: boolean;
   onCancel: () => void;
   onCreate: (payload: CreateCyclePayload) => void;
@@ -25,6 +26,10 @@ export default function CreateCycleForm({ wardens, busy, onCancel, onCreate }: {
 
   const puteraWardens = wardens.filter(w => w.status === 'active' && w.hostel === 'Asrama Putera');
   const puteriWardens = wardens.filter(w => w.status === 'active' && w.hostel === 'Asrama Puteri');
+
+  const overlappingCycle = start && end
+    ? cycles.find(c => c.start_date <= end && c.end_date >= start)
+    : undefined;
 
   const pickMonth = () => {
     if (!start) return;
@@ -54,6 +59,10 @@ export default function CreateCycleForm({ wardens, busy, onCancel, onCreate }: {
   const handleCreate = () => {
     if (!name.trim() || !start || !end) {
       showToast('Sila lengkapkan nama dan tempoh kitaran.');
+      return;
+    }
+    if (overlappingCycle) {
+      showToast('Tempoh ini bertindih dengan kitaran sedia ada. Sila pilih tempoh lain.');
       return;
     }
     const pairsValid = pairs.every(p => p.name.trim() && p.putera_warden_id && p.puteri_warden_id);
@@ -91,6 +100,12 @@ export default function CreateCycleForm({ wardens, busy, onCancel, onCreate }: {
           <button type="button" onClick={pickMonth} className="text-[0.68rem] font-semibold text-brass hover:underline mt-1">Isi 2 bulan secara auto</button>
         </div>
       </div>
+
+      {overlappingCycle && (
+        <p className="text-xs font-semibold text-red bg-red-wash border border-red/40 rounded px-3 py-2">
+          Tempoh ini bertindih dengan kitaran &quot;{overlappingCycle.name}&quot; ({fmtRange(overlappingCycle.start_date, overlappingCycle.end_date)}). Sila pilih tempoh lain.
+        </p>
+      )}
 
       <div>
         <div className="flex items-center justify-between mb-1">

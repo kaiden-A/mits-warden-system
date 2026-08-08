@@ -11,7 +11,9 @@ from app.models.user import User
 from app.schemas.roster import (
     RosterCycleCreate,
     RosterCycleDetail,
+    RosterCycleEntryUpdate,
     RosterCycleExcludedUpdate,
+    RosterCycleGenerate,
     RosterCycleSummary,
 )
 from app.services import cycle_service
@@ -82,10 +84,27 @@ async def generate_roster(
     cycle_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
+    body: RosterCycleGenerate | None = None,
 ):
     cycle = await cycle_service.get_cycle(cycle_id, db)
     cycle = await cycle_service.generate_cycle_entries(cycle, db)
+    if body:
+        await cycle_service.apply_overrides(cycle, body.overrides, db)
+        cycle = await cycle_service.get_cycle(cycle_id, db)
     await cycle_service.publish_cycle(cycle, current_user, db)
+    return await _cycle_detail(cycle_id, db)
+
+
+@router.patch("/{cycle_id}/entries/{entry_id}", response_model=RosterCycleDetail)
+async def update_cycle_entry(
+    cycle_id: uuid.UUID,
+    entry_id: uuid.UUID,
+    body: RosterCycleEntryUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    cycle = await cycle_service.get_cycle(cycle_id, db)
+    await cycle_service.update_cycle_entry(cycle, entry_id, body, current_user, db)
     return await _cycle_detail(cycle_id, db)
 
 

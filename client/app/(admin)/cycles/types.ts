@@ -37,6 +37,11 @@ export interface CycleDetail extends CycleSummary {
   entries: CycleEntry[];
 }
 
+export interface CycleEntryEdit {
+  putera_warden_id?: string;
+  puteri_warden_id?: string;
+}
+
 export interface SignatureBlock {
   label: string;
   name: string;
