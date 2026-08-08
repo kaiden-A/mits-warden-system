@@ -26,7 +26,8 @@ export default function AdminWardensPage() {
   const fetchWardens = () => {
     apiGet('/api/wardens')
       .then((data: { wardens: Warden[] }) => setWardens(data.wardens))
-      .catch(() => showToast('Gagal memuatkan senarai warden.'));
+      .catch(() => showToast('Gagal memuatkan senarai warden.'))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
