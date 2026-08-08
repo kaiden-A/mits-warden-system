@@ -50,7 +50,7 @@ function reportTimeStr(r: ReportDetail): string {
 
 async function loadLogoDataUrl(): Promise<string | null> {
   try {
-    const res = await fetch('/logo_mits.jpeg');
+    const res = await fetch('/logo_mits.png');
     const blob = await res.blob();
     return await new Promise((resolve, reject) => {
       const reader = new FileReader();
