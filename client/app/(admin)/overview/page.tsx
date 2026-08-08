@@ -60,7 +60,7 @@ export default function AdminOverviewPage() {
     <div>
       <div className="flex items-baseline justify-between flex-wrap gap-3 mb-6">
         <div>
-          <span className="block font-mono text-[0.72rem] uppercase tracking-wider text-dim-text mb-1">Ringkasan MITS Klang</span>
+          <span className="block font-mono text-[0.72rem] uppercase tracking-wider text-dim-text mb-1">Ringkasan MITSAI</span>
           <h2 className="font-heading text-2xl font-bold text-ink-text">{greeting}, {user?.name || 'Pengarah'}</h2>
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function AdminOverviewPage() {
                 <span className="font-mono">{fmtShort(fromISO(entry.date))}</span>
                 <span className="hidden sm:inline">·</span>
                 <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-sm" style={{ color: '#7A7261' }}>
+                  <span className="material-symbols-outlined text-sm" style={{ color: '#6B7280' }}>
                     {entry.status === 'flagged' ? 'flag' : entry.status === 'reviewed' ? 'check_circle' : entry.status === 'submitted' ? 'send' : 'edit_note'}
                   </span>
                   {entry.status !== 'draft' ? fmtTime(entry.submitted_at) : (entry.inspection_time || '—')}

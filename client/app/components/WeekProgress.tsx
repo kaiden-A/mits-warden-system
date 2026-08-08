@@ -17,13 +17,13 @@ export default function WeekProgress({ days, today }: { days: DayStatus[]; today
         let check = '';
 
         if (status === 'submitted' || status === 'reviewed' || status === 'flagged') {
-          cls = 'bg-green-wash border-[#8AAA8A]';
+          cls = 'bg-green-wash border-[#A8CFB7]';
           check = '✓';
         } else if (isFuture) {
           cls = 'bg-paper border-paper-line';
           check = '';
         } else if (status === 'none') {
-          cls = 'bg-red-wash border-[#D4A89E]';
+          cls = 'bg-red-wash border-[#EBBFB5]';
           check = '✗';
         } else if (status === 'draft') {
           cls = 'bg-paper border-paper-line';

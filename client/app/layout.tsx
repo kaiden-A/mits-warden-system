@@ -23,8 +23,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Log Tugas — MITS Klang",
-  description: "Sistem Laporan & Semakan Warden — Maahad Integrasi Tahfiz Klang",
+  title: "Log Tugas — MITSAI",
+  description: "Sistem Laporan & Semakan Warden — Maahad Integrasi Tahfiz Selangor Alam Impian (MITSAI)",
 };
 
 export default function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {

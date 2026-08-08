@@ -9,17 +9,17 @@ import LoadingSpinner from '@/app/components/LoadingSpinner';
 import { useToast } from '@/app/components/Toast';
 
 const C = {
-  draft: '#B8AD97',
-  submitted: '#A7802E',
-  reviewed: '#43604B',
-  flagged: '#A23E30',
-  late: '#A23E30',
-  putera: '#7C5E1F',
-  puteri: '#43604B',
-  good: '#43604B',
-  poor: '#A23E30',
-  na: '#B8AD97',
-  missing: '#E2DAC4',
+  draft: '#9CA3AF',
+  submitted: '#B9891F',
+  reviewed: '#2E7D4F',
+  flagged: '#B3402E',
+  late: '#B3402E',
+  putera: '#0B4A2E',
+  puteri: '#B9891F',
+  good: '#2E7D4F',
+  poor: '#B3402E',
+  na: '#9CA3AF',
+  missing: '#E2E8E5',
 };
 
 const SECTION_LABELS: Record<string, string> = {
@@ -33,14 +33,14 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 const TOOLTIP_STYLE = {
-  background: '#FBF9F3',
-  border: '1px solid #E2DAC4',
+  background: '#FFFFFF',
+  border: '1px solid #E2E8E5',
   borderRadius: 8,
   fontSize: 12,
-  color: '#2A2620',
+  color: '#1F2937',
 };
 
-const AXIS_TICK = { fontSize: 11, fill: '#7A7261' };
+const AXIS_TICK = { fontSize: 11, fill: '#6B7280' };
 
 interface AnalyticsData {
   week_start: string;
@@ -112,7 +112,7 @@ function HealthTooltip({ active, payload }: { active?: boolean; payload?: Array<
 function HealthPctLabel({ x, y, width, height, payload }: { x?: number; y?: number; width?: number; height?: number; payload?: HealthRow }) {
   return (
     <text x={(x ?? 0) + (width ?? 0) + 6} y={(y ?? 0) + (height ?? 0) / 2} dy="0.35em"
-      fontSize={11} fontWeight={600} fill="#2A2620">
+      fontSize={11} fontWeight={600} fill="#1F2937">
       {payload?.goodPct ?? 0}%
     </text>
   );
@@ -214,8 +214,8 @@ export default function AdminAnalyticsPage() {
             <div className="h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weekData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2DAC4" vertical={false} />
-                  <XAxis dataKey="day" tick={AXIS_TICK} axisLine={{ stroke: '#E2DAC4' }} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8E5" vertical={false} />
+                  <XAxis dataKey="day" tick={AXIS_TICK} axisLine={{ stroke: '#E2E8E5' }} tickLine={false} />
                   <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip contentStyle={TOOLTIP_STYLE} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -234,8 +234,8 @@ export default function AdminAnalyticsPage() {
             <div className="h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weekData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2DAC4" vertical={false} />
-                  <XAxis dataKey="day" tick={AXIS_TICK} axisLine={{ stroke: '#E2DAC4' }} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8E5" vertical={false} />
+                  <XAxis dataKey="day" tick={AXIS_TICK} axisLine={{ stroke: '#E2E8E5' }} tickLine={false} />
                   <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip contentStyle={TOOLTIP_STYLE} />
                   <Bar dataKey="late" name="Terlewat" fill={C.late} radius={[4, 4, 0, 0]} />
@@ -254,8 +254,8 @@ export default function AdminAnalyticsPage() {
               <div className="h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={sectionData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E2DAC4" vertical={false} />
-                    <XAxis dataKey="section" tick={AXIS_TICK} axisLine={{ stroke: '#E2DAC4' }} tickLine={false} interval={0} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8E5" vertical={false} />
+                    <XAxis dataKey="section" tick={AXIS_TICK} axisLine={{ stroke: '#E2E8E5' }} tickLine={false} interval={0} />
                     <YAxis domain={[0, 4]} tick={AXIS_TICK} axisLine={false} tickLine={false} />
                     <Tooltip contentStyle={TOOLTIP_STYLE}
                       formatter={(v, name, item) =>
@@ -292,7 +292,7 @@ export default function AdminAnalyticsPage() {
             <div className="h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={healthData} layout="vertical" margin={{ top: 5, right: 34, left: 0, bottom: 0 }} barSize={14}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2DAC4" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8E5" horizontal={false} />
                   <XAxis type="number" domain={[0, 100]} hide />
                   <YAxis type="category" dataKey="section" tick={AXIS_TICK} axisLine={false} tickLine={false} width={76} />
                   <Tooltip content={<HealthTooltip />} />

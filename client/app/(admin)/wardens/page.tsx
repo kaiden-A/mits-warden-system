@@ -7,11 +7,13 @@ import Modal from '@/app/components/Modal';
 import { useToast } from '@/app/components/Toast';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/hooks/useAuth';
 
 interface Warden {
   id: string;
   email: string;
   name: string;
+  is_admin: boolean;
   hostel: string | null;
   status: string;
   report_count: number;
@@ -21,6 +23,7 @@ interface Warden {
 export default function AdminWardensPage() {
   const { showToast } = useToast();
   const router = useRouter();
+  const { user } = useAuth();
   const [wardens, setWardens] = useState<Warden[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -90,6 +93,16 @@ export default function AdminWardensPage() {
     }
   };
 
+  const handleToggleAdmin = async (w: Warden) => {
+    try {
+      await apiPatch(`/api/wardens/${w.id}/admin`, { is_admin: !w.is_admin });
+      showToast(w.is_admin ? 'Hak pentadbir telah ditarik.' : `${w.name} kini juga pentadbir.`);
+      fetchWardens();
+    } catch (err: any) {
+      showToast(err.message || 'Gagal mengemas kini hak pentadbir.');
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-12 text-dim-text flex items-center justify-center gap-2"><LoadingSpinner size={18} />Memuatkan…</div>;
   }
@@ -123,7 +136,17 @@ export default function AdminWardensPage() {
           <tbody>
             {wardens.map(w => (
               <tr key={w.id}>
-                <td className="py-3 px-2 border-b border-paper-line"><strong className="text-sm">{w.name}</strong></td>
+                <td className="py-3 px-2 border-b border-paper-line">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <strong className="text-sm">{w.name}</strong>
+                    {w.is_admin && (
+                      <span className="inline-flex items-center gap-1 font-mono text-[0.62rem] font-semibold tracking-widest uppercase px-2 py-0.5 border border-current rounded-[2px] leading-none whitespace-nowrap text-brass-deep bg-brass-wash">
+                        <span className="w-1 h-1 rounded-full bg-current"></span>
+                        Admin
+                      </span>
+                    )}
+                  </div>
+                </td>
                 <td className="py-3 px-2 border-b border-paper-line font-mono text-xs text-dim-text">{w.email}</td>
                 <td className="py-3 px-2 border-b border-paper-line text-sm">{w.hostel}</td>
                 <td className="py-3 px-2 border-b border-paper-line">
@@ -136,11 +159,22 @@ export default function AdminWardensPage() {
                 </td>
                 <td className="py-3 px-2 border-b border-paper-line text-sm">{w.report_count}</td>
                 <td className="py-3 px-2 border-b border-paper-line">
-                  <div className="flex gap-1.5 justify-end">
+                  <div className="flex gap-1.5 justify-end flex-wrap">
                     <button type="button" onClick={() => router.push(`/reports?warden=${w.id}`)}
                       className="px-3 py-1.5 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
                       Lihat Laporan
                     </button>
+                    {w.is_admin ? (
+                      <button type="button" onClick={() => handleToggleAdmin(w)} disabled={w.id === user?.id}
+                        className="px-3 py-1.5 text-xs font-semibold border border-brass-deep rounded bg-transparent text-brass-deep hover:bg-brass-wash disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                        Tarik Hak Admin
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => handleToggleAdmin(w)}
+                        className="px-3 py-1.5 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors">
+                        Jadikan Admin
+                      </button>
+                    )}
                     {w.status === 'active' ? (
                       <button type="button" onClick={() => setConfirmRevokeId(w.id)}
                         className="px-3 py-1.5 text-xs font-semibold border border-red rounded bg-transparent text-red hover:bg-red-wash transition-colors">
@@ -169,23 +203,42 @@ export default function AdminWardensPage() {
                 <p className="font-heading font-semibold text-sm">{w.name}</p>
                 <p className="font-mono text-[0.65rem] text-dim-text mt-0.5">{w.email}</p>
               </div>
-              <span className={`inline-flex items-center gap-1 font-mono text-[0.62rem] font-semibold tracking-widest uppercase px-2 py-0.5 border border-current rounded-[2px] leading-none whitespace-nowrap ${
-                w.status === 'active' ? 'text-green bg-green-wash border-green' : 'text-red bg-red-wash border-red'
-              }`}>
-                <span className="w-1 h-1 rounded-full bg-current"></span>
-                {w.status === 'active' ? 'Aktif' : 'Ditarik'}
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                {w.is_admin && (
+                  <span className="inline-flex items-center gap-1 font-mono text-[0.58rem] font-semibold tracking-widest uppercase px-2 py-0.5 border border-current rounded-[2px] leading-none whitespace-nowrap text-brass-deep bg-brass-wash">
+                    <span className="w-1 h-1 rounded-full bg-current"></span>
+                    Admin
+                  </span>
+                )}
+                <span className={`inline-flex items-center gap-1 font-mono text-[0.62rem] font-semibold tracking-widest uppercase px-2 py-0.5 border border-current rounded-[2px] leading-none whitespace-nowrap ${
+                  w.status === 'active' ? 'text-green bg-green-wash border-green' : 'text-red bg-red-wash border-red'
+                }`}>
+                  <span className="w-1 h-1 rounded-full bg-current"></span>
+                  {w.status === 'active' ? 'Aktif' : 'Ditarik'}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-3 text-xs text-dim-text mb-3">
               <span>{w.hostel}</span>
               <span className="w-1 h-1 rounded-full bg-paper-line"></span>
               <span>{w.report_count} laporan</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button type="button" onClick={() => router.push(`/reports?warden=${w.id}`)}
                 className="flex-1 py-2.5 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors text-center">
                 Lihat Laporan
               </button>
+              {w.is_admin ? (
+                <button type="button" onClick={() => handleToggleAdmin(w)} disabled={w.id === user?.id}
+                  className="flex-1 py-2.5 text-xs font-semibold border border-brass-deep rounded bg-transparent text-brass-deep hover:bg-brass-wash disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-center">
+                  Tarik Hak Admin
+                </button>
+              ) : (
+                <button type="button" onClick={() => handleToggleAdmin(w)}
+                  className="flex-1 py-2.5 text-xs font-semibold border border-paper-line rounded bg-transparent text-ink-text hover:bg-paper transition-colors text-center">
+                  Jadikan Admin
+                </button>
+              )}
               {w.status === 'active' ? (
                 <button type="button" onClick={() => setConfirmRevokeId(w.id)}
                   className="flex-1 py-2.5 text-xs font-semibold border border-red rounded bg-transparent text-red hover:bg-red-wash transition-colors text-center">

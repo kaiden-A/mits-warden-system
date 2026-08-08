@@ -58,21 +58,27 @@ Every time a refresh token is used to get new tokens:
 
 ## RBAC Matrix
 
-| Resource | Admin | Warden |
-|----------|-------|--------|
-| `GET /api/wardens` | All wardens | Forbidden |
-| `POST /api/wardens` | Yes | Forbidden |
-| `PATCH /api/wardens/{id}/status` | Yes | Forbidden |
-| `GET /api/roster` | Any week | Current week |
-| `PUT /api/roster` | Yes | Forbidden |
-| `GET /api/reports` | All reports | Own hostel only |
-| `POST /api/reports` | Forbidden | Yes |
-| `PATCH /api/reports/{id}` | Admin note only | Own drafts only |
-| `POST /api/reports/{id}/submit` | Forbidden | Own reports only |
-| `POST /api/reports/{id}/review` | Yes | Forbidden |
-| `POST /api/reports/{id}/flag` | Yes | Forbidden |
-| `GET /api/dashboard` | Forbidden | Warden view |
-| `GET /api/dashboard/admin` | Admin view | Forbidden |
+Roles are not mutually exclusive: a warden can also be granted admin privilege via the
+independent `is_admin` flag (dual role: `role = "warden"` + `is_admin = true`). Dual users
+pass both admin and warden checks; in the UI they switch between the two apps via the
+sidebar mode switcher.
+
+| Resource | Admin | Warden | Dual (warden + is_admin) |
+|----------|-------|--------|--------------------------|
+| `GET /api/wardens` | All wardens | Forbidden | All wardens |
+| `POST /api/wardens` | Yes | Forbidden | Yes |
+| `PATCH /api/wardens/{id}/status` | Yes | Forbidden | Yes |
+| `PATCH /api/wardens/{id}/admin` | Yes | Forbidden | Yes (not self-demotion) |
+| `GET /api/roster` | Any week | Current week | Any week |
+| `PUT /api/roster` | Yes | Forbidden | Yes |
+| `GET /api/reports` | All reports | Own hostel only | All reports |
+| `POST /api/reports` | Forbidden | Yes | Yes (as warden) |
+| `PATCH /api/reports/{id}` | Admin note only | Own drafts only | Both |
+| `POST /api/reports/{id}/submit` | Forbidden | Own reports only | Own reports only |
+| `POST /api/reports/{id}/review` | Yes | Forbidden | Yes |
+| `POST /api/reports/{id}/flag` | Yes | Forbidden | Yes |
+| `GET /api/dashboard` | Forbidden | Warden view | Warden view |
+| `GET /api/dashboard/admin` | Admin view | Forbidden | Admin view |
 
 ## Implementation
 
@@ -89,7 +95,7 @@ async def get_current_user(token: str, db) -> User:
     return user
 
 def require_admin(user: User = Depends(get_current_user)) -> User:
-    if user.role != "admin":
+    if user.role != "admin" and not user.is_admin:
         raise HTTPException(403)
     return user
 ```

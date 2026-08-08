@@ -6,7 +6,7 @@ from app.database import get_db
 from app.dependencies import get_current_user, require_admin
 from app.models.report import Report
 from app.models.user import User
-from app.schemas.user import UserCreate, UserStatusUpdate, WardenListItem, WardenListResponse
+from app.schemas.user import UserAdminUpdate, UserCreate, UserStatusUpdate, WardenListItem, WardenListResponse
 from app.services.email_service import notify_warden_created
 from app.utils.security import hash_password
 
@@ -45,6 +45,7 @@ async def list_wardens(
                 id=warden.id,
                 email=warden.email,
                 name=warden.name,
+                is_admin=warden.is_admin,
                 hostel=warden.hostel,
                 status=warden.status,
                 report_count=report_count,
@@ -127,6 +128,49 @@ async def update_warden_status(
         id=user.id,
         email=user.email,
         name=user.name,
+        is_admin=user.is_admin,
+        hostel=user.hostel,
+        status=user.status,
+    )
+
+
+@router.patch("/{user_id}/admin", response_model=WardenListItem)
+async def update_warden_admin(
+    user_id: str,
+    body: UserAdminUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    if user.role != "warden":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Hak pentadbir hanya boleh diurus untuk akaun warden.",
+        )
+
+    if user.id == current_user.id and not body.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Anda tidak boleh menarik hak pentadbir daripada akaun sendiri.",
+        )
+
+    user.is_admin = body.is_admin
+    await db.commit()
+    await db.refresh(user)
+
+    return WardenListItem(
+        id=user.id,
+        email=user.email,
+        name=user.name,
+        is_admin=user.is_admin,
         hostel=user.hostel,
         status=user.status,
     )

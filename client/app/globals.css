@@ -1,21 +1,27 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-ink: #1E2430;
-  --color-ink-soft: #2B3244;
-  --color-ink-line: #3A4258;
-  --color-paper: #F6F2E8;
-  --color-paper-raised: #FBF9F3;
-  --color-paper-line: #E2DAC4;
-  --color-brass: #A7802E;
-  --color-brass-deep: #7C5E1F;
-  --color-brass-wash: #EFE3C4;
-  --color-red: #A23E30;
-  --color-red-wash: #F3DFDA;
-  --color-green: #43604B;
-  --color-green-wash: #DEE7DD;
-  --color-ink-text: #2A2620;
-  --color-dim-text: #7A7261;
+  --color-ink: #0B4A2E;
+  --color-ink-soft: #11543A;
+  --color-ink-line: #1E6847;
+  --color-paper: #F6F8F7;
+  --color-paper-raised: #FFFFFF;
+  --color-paper-line: #E2E8E5;
+  --color-brass: #B9891F;
+  --color-brass-deep: #8F6A10;
+  --color-brass-wash: #F6EDD3;
+  --color-red: #B3402E;
+  --color-red-wash: #F6E3DE;
+  --color-green: #2E7D4F;
+  --color-green-wash: #E2F2E7;
+  --color-blue: #2F6BB5;
+  --color-blue-deep: #1D4F8F;
+  --color-blue-wash: #E1ECF7;
+  --color-yellow: #B8860B;
+  --color-yellow-deep: #8F6A10;
+  --color-yellow-wash: #F7EDCF;
+  --color-ink-text: #1F2937;
+  --color-dim-text: #6B7280;
 
   --font-heading: var(--font-fraunces);
   --font-body: var(--font-ibm-plex-sans);
@@ -54,10 +60,15 @@ select {
 
 /* Rating toggle selected states (class names are built dynamically, so they live here) */
 .rating-1 { background: var(--color-red-wash); color: var(--color-red); }
-.rating-2 { background: var(--color-brass-wash); color: var(--color-brass-deep); }
-.rating-3 { background: var(--color-green-wash); color: var(--color-green); }
-.rating-4 { background: var(--color-brass); color: #fff; }
-.rating-na { background: #EDEAE0; color: var(--color-dim-text); }
+.rating-2 { background: var(--color-yellow-wash); color: var(--color-yellow-deep); }
+.rating-3 { background: var(--color-blue-wash); color: var(--color-blue); }
+.rating-4 { background: var(--color-green); color: #fff; }
+.rating-na { background: #F3F4F6; color: var(--color-dim-text); }
+
+/* Faint Islamic geometric (8-pointed star) pattern, subtle by design */
+.mitsai-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23F6EDD3' stroke-width='1'%3E%3Cpath d='M36 6l7.5 22.5L66 36l-22.5 7.5L36 66l-7.5-22.5L6 36l22.5-7.5z'/%3E%3Ccircle cx='36' cy='36' r='5'/%3E%3Cpath d='M36 0l3 3-3 3-3-3zM0 36l3-3 3 3-3 3zM72 36l-3-3 3-3 3 3zM36 72l-3-3 3-3 3 3z'/%3E%3C/g%3E%3C/svg%3E");
+}
 
 /* Responsive table helper: hide specific columns on mobile */
 @media (max-width: 767px) {

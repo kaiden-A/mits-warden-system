@@ -67,6 +67,7 @@ Get current user profile. Requires JWT.
   "email": "faiz@sekolah.edu.my",
   "name": "Muhammad Faiz Bin Ahmad",
   "role": "warden",
+  "is_admin": false,
   "hostel": "Asrama Putera",
   "status": "active"
 }
@@ -88,6 +89,7 @@ List all wardens with report stats.
       "id": "...",
       "email": "faiz@sekolah.edu.my",
       "name": "Muhammad Faiz Bin Ahmad",
+      "is_admin": false,
       "hostel": "Asrama Putera",
       "status": "active",
       "report_count": 12,
@@ -123,6 +125,19 @@ Activate or revoke a warden.
   "status": "active"
 }
 ```
+
+### `PATCH /api/wardens/{id}/admin`
+
+Grant or revoke admin privilege on a warden account (creates/removes the dual admin+warden role). Self-demotion is rejected (400).
+
+**Request:**
+```json
+{
+  "is_admin": true
+}
+```
+
+**Response:** Same shape as a `WardenListItem` (includes `is_admin`).
 
 ---
 

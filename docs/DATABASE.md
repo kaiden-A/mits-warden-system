@@ -43,7 +43,8 @@
 | `email` | VARCHAR(255) UNIQUE | Login identifier |
 | `password_hash` | VARCHAR(255) | bcrypt hash |
 | `name` | VARCHAR(255) | Full name |
-| `role` | VARCHAR(20) | `admin` or `warden` |
+| `role` | VARCHAR(20) | `admin` or `warden` (warden = warden membership) |
+| `is_admin` | BOOLEAN | Independent admin privilege; a warden with `is_admin = true` is a dual admin+warden |
 | `hostel` | VARCHAR(20) | `Asrama Putera` / `Asrama Puteri` / NULL for admin |
 | `status` | VARCHAR(20) | `active` or `revoked` |
 | `must_change_password` | BOOLEAN | True if admin-generated password |

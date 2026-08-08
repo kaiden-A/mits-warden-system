@@ -16,7 +16,7 @@ const INSTITUTION = 'MAAHAD INTEGRASI TAHFIZ SELANGOR ALAM IMPIAN, KLANG';
 const ADDRESS = 'Jalan Tun Teja 35/1, Alam Impian, Seksyen 35, 40470 Shah Alam, Selangor';
 
 const SECTION_HEAD: Partial<Styles> = {
-  fillColor: [49, 74, 98],
+  fillColor: [11, 74, 46],
   textColor: [255, 255, 255],
   fontStyle: 'bold',
   fontSize: 6.4,
@@ -104,7 +104,7 @@ function drawHeader(doc: jsPDF, logo: string | null, date: string, timeStr: stri
     24,
     { align: 'center' }
   );
-  doc.setDrawColor(35, 40, 55);
+  doc.setDrawColor(11, 74, 46);
   doc.setLineWidth(0.3);
   doc.line(M, 26.5, PAGE_W - M, 26.5);
 }
@@ -127,7 +127,7 @@ function drawMeta(doc: jsPDF, r: ReportDetail, timeStr: string): number {
     y += 4.8;
   });
   y += 1.5;
-  doc.setDrawColor(190, 180, 150);
+  doc.setDrawColor(185, 137, 31);
   doc.setLineWidth(0.2);
   doc.line(M, y, PAGE_W - M, y);
   return y + 3;
@@ -198,7 +198,7 @@ function drawReport(doc: jsPDF, logo: string | null, r: ReportDetail): void {
     body: buildBodyRows(r),
     theme: 'grid',
     styles: { fontSize: 6.2, cellPadding: 0.45 },
-    headStyles: { fillColor: [49, 74, 98], fontSize: 6.4, textColor: [255, 255, 255] },
+    headStyles: { fillColor: [11, 74, 46], fontSize: 6.4, textColor: [255, 255, 255] },
     columnStyles: {
       0: { cellWidth: PAGE_W - M * 2 - 18 },
       1: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },

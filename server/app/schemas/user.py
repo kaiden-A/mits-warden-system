@@ -9,6 +9,7 @@ class UserRead(BaseModel):
     email: str
     name: str
     role: str
+    is_admin: bool = False
     hostel: str | None = None
     status: str
 
@@ -26,10 +27,15 @@ class UserStatusUpdate(BaseModel):
     status: str
 
 
+class UserAdminUpdate(BaseModel):
+    is_admin: bool
+
+
 class WardenListItem(BaseModel):
     id: uuid.UUID
     email: str
     name: str
+    is_admin: bool = False
     hostel: str | None = None
     status: str
     report_count: int = 0

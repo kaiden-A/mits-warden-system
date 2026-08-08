@@ -8,6 +8,7 @@ interface User {
   email: string;
   name: string;
   role: string;
+  is_admin: boolean;
   hostel: string | null;
   status: string;
 }
@@ -63,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       login,
       logout,
-      isAdmin: user?.role === 'admin',
+      isAdmin: user?.role === 'admin' || user?.is_admin === true,
       isWarden: user?.role === 'warden',
     }}>
       {children}

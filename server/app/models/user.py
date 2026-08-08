@@ -20,6 +20,9 @@ class User(Base):
     role: Mapped[str] = mapped_column(
         String(20), nullable=False, default="warden"
     )
+    is_admin: Mapped[bool] = mapped_column(
+        default=False, nullable=False
+    )
     hostel: Mapped[str | None] = mapped_column(String(20), nullable=True)
     status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="active"

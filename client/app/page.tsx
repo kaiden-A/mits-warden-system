@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     if (loading) return;
     if (!user) router.replace('/login');
-    else if (user.role === 'admin') router.replace('/overview');
+    else if (user.role === 'admin' || user.is_admin) router.replace('/overview');
     else router.replace('/dashboard');
   }, [user, loading, router]);
 
@@ -19,7 +19,7 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center bg-ink">
       <div className="text-center">
         <div className="text-paper font-heading text-xl animate-pulse">Log Tugas</div>
-        <p className="text-[#8B93A8] text-xs font-mono mt-2">Maahad Integrasi Tahfiz Klang (MITS)</p>
+        <p className="text-[#A3BCAE] text-xs font-mono mt-2">Maahad Integrasi Tahfiz Selangor Alam Impian (MITSAI)</p>
       </div>
     </div>
   );

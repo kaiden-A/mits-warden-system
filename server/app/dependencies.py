@@ -40,7 +40,7 @@ async def get_current_user(
 
 
 async def require_admin(user: User = Depends(get_current_user)) -> User:
-    if user.role != "admin":
+    if user.role != "admin" and not user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Akses ini hanya untuk pentadbir.",

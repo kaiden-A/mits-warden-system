@@ -101,7 +101,7 @@ export default function WardenDashboardPage() {
         {hasReport ? (
           <>
             <span className="material-symbols-outlined text-2xl sm:text-3xl flex-shrink-0"
-              style={{ color: reportStatus === 'reviewed' ? '#43604B' : reportStatus === 'flagged' ? '#A23E30' : reportStatus === 'submitted' ? '#7C5E1F' : '#7A7261' }}>
+              style={{ color: reportStatus === 'reviewed' ? '#2E7D4F' : reportStatus === 'flagged' ? '#B3402E' : reportStatus === 'submitted' ? '#8F6A10' : '#6B7280' }}>
               {reportStatus === 'reviewed' ? 'check_circle' : reportStatus === 'flagged' ? 'warning' : reportStatus === 'submitted' ? 'send' : 'edit_note'}
             </span>
             <div className="flex-1 min-w-0">
